@@ -1,0 +1,36 @@
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Node caches and dependencies
+node_modules/
+.next/
+dist/
+build/
+.npm
+.yarn/
+
+# Local databases
+backend/test.db
+*.db
+*.sqlite3
+
+# Uploads, outputs, and storage
+backend/storage/
+storage/
+uploads/
+outputs/
+*.pdf
+*.xlsx
+
+# Logs
+logs/
+*.log
+
+# Environment variables
+.env
+.env.*
+.local
+*.local
