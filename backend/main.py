@@ -79,10 +79,18 @@ try:
             return {"status": "error", "message": str(err)}
 
 except Exception as e:
-    import traceback
+    import traceback, json
     startup_error = traceback.format_exc()
     logger.error(f"FastAPI Startup Error: {startup_error}")
-    
+
+    # Pre-compute error payload
+    _err_body = json.dumps({
+        "status": "error",
+        "message": "FastAPI failed to start up on Vercel.",
+        "error_details": str(e),
+        "traceback": startup_error.split("\n")
+    }).encode('utf-8')
+
     # Raw ASGI fallback application to guarantee error output without FastAPI routing overhead
     async def app(scope, receive, send):
         if scope['type'] == 'http':
@@ -92,6 +100,7 @@ except Exception as e:
                     'type': 'http.response.start',
                     'status': 200,
                     'headers': [
+                        (b'content-length', b'0'),
                         (b'access-control-allow-origin', b'*'),
                         (b'access-control-allow-methods', b'GET, POST, PUT, DELETE, OPTIONS'),
                         (b'access-control-allow-headers', b'content-type, authorization'),
@@ -105,28 +114,24 @@ except Exception as e:
                 })
                 return
 
+            body_len = str(len(_err_body)).encode('utf-8')
             await send({
                 'type': 'http.response.start',
                 'status': 200,
                 'headers': [
                     (b'content-type', b'application/json'),
+                    (b'content-length', body_len),
                     (b'access-control-allow-origin', b'*'),
                     (b'access-control-allow-methods', b'GET, POST, PUT, DELETE, OPTIONS'),
                     (b'access-control-allow-headers', b'content-type, authorization'),
                 ]
             })
-            import json
-            err_data = {
-                "status": "error",
-                "message": "FastAPI failed to start up on Vercel.",
-                "error_details": str(e),
-                "traceback": startup_error.split("\n")
-            }
             await send({
                 'type': 'http.response.body',
-                'body': json.dumps(err_data).encode('utf-8'),
+                'body': _err_body,
                 'more_body': False
             })
+
 
 
 
