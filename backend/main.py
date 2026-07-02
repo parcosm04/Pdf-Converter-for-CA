@@ -69,12 +69,33 @@ except Exception as e:
     # Raw ASGI fallback application to guarantee error output without FastAPI routing overhead
     async def app(scope, receive, send):
         if scope['type'] == 'http':
+            # Handle OPTIONS preflight request
+            if scope.get('method') == 'OPTIONS':
+                await send({
+                    'type': 'http.response.start',
+                    'status': 200,
+                    'headers': [
+                        (b'access-control-allow-origin', b'*'),
+                        (b'access-control-allow-methods', b'GET, POST, PUT, DELETE, OPTIONS'),
+                        (b'access-control-allow-headers', b'content-type, authorization'),
+                        (b'access-control-max-age', b'86400'),
+                    ]
+                })
+                await send({
+                    'type': 'http.response.body',
+                    'body': b'',
+                    'more_body': False
+                })
+                return
+
             await send({
                 'type': 'http.response.start',
                 'status': 200,
                 'headers': [
                     (b'content-type', b'application/json'),
                     (b'access-control-allow-origin', b'*'),
+                    (b'access-control-allow-methods', b'GET, POST, PUT, DELETE, OPTIONS'),
+                    (b'access-control-allow-headers', b'content-type, authorization'),
                 ]
             })
             import json
@@ -89,6 +110,7 @@ except Exception as e:
                 'body': json.dumps(err_data).encode('utf-8'),
                 'more_body': False
             })
+
 
 
 
