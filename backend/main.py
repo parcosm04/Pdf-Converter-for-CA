@@ -60,14 +60,27 @@ except Exception as e:
     startup_error = traceback.format_exc()
     logger.error(f"FastAPI Startup Error: {startup_error}")
     
-    app = FastAPI(title="UBSP Fallback Diagnostics")
-    
-    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
-    def diagnostics_fallback(path: str):
-        return {
-            "status": "error",
-            "message": "FastAPI failed to start up on server.",
-            "error_details": str(e),
-            "traceback": startup_error.split("\n")
-        }
+    # Raw ASGI fallback application to guarantee error output without FastAPI routing overhead
+    async def app(scope, receive, send):
+        if scope['type'] == 'http':
+            await send({
+                'type': 'http.response.start',
+                'status': 500,
+                'headers': [
+                    (b'content-type', b'application/json'),
+                    (b'access-control-allow-origin', b'*'),
+                ]
+            })
+            import json
+            err_data = {
+                "status": "error",
+                "message": "FastAPI failed to start up on Vercel.",
+                "error_details": str(e),
+                "traceback": startup_error.split("\n")
+            }
+            await send({
+                'type': 'http.response.body',
+                'body': json.dumps(err_data).encode('utf-8'),
+            })
+
 
