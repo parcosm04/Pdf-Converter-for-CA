@@ -20,10 +20,9 @@ try:
     from app.models.models import Base
     from app.api import auth, jobs
 
-    # Create database tables automatically if using a local sqlite engine (useful for tests/quick dev)
-    if settings.DATABASE_URL.startswith("sqlite"):
-        logger.info("Initializing sqlite database tables...")
-        Base.metadata.create_all(bind=engine)
+    # Create database tables automatically on startup
+    logger.info("Initializing database tables...")
+    Base.metadata.create_all(bind=engine)
 
     app = FastAPI(
         title=settings.APP_NAME,

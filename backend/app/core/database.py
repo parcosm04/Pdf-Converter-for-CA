@@ -1,10 +1,11 @@
 import os
+import ssl
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 
 # Retrieve PostgreSQL URL from environment variables, fallback to local sqlite for testing if not set
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/ubsp")
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///test.db")
 
 # In production we use PostgreSQL, for development/testing sqlite is allowed as fallback
 if DATABASE_URL.startswith("sqlite"):
@@ -15,11 +16,15 @@ else:
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
     elif DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
-        
+
+    # pg8000 requires explicit SSL context for cloud-hosted databases (Supabase, Neon, etc.)
+    ssl_context = ssl.create_default_context()
+    
     engine = create_engine(
         DATABASE_URL,
-        pool_size=20,
-        max_overflow=10,
+        connect_args={"ssl_context": ssl_context},
+        pool_size=5,
+        max_overflow=5,
         pool_pre_ping=True
     )
 
