@@ -1,11 +1,12 @@
 import os
 import ssl
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
 
 # Retrieve PostgreSQL URL from environment variables, fallback to local sqlite for testing if not set
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///test.db")
+IS_SERVERLESS = os.getenv("VERCEL", "") == "1"
 
 # In production we use PostgreSQL, for development/testing sqlite is allowed as fallback
 if DATABASE_URL.startswith("sqlite"):
@@ -19,14 +20,22 @@ else:
 
     # pg8000 requires explicit SSL context for cloud-hosted databases (Supabase, Neon, etc.)
     ssl_context = ssl.create_default_context()
-    
-    engine = create_engine(
-        DATABASE_URL,
-        connect_args={"ssl_context": ssl_context},
-        pool_size=5,
-        max_overflow=5,
-        pool_pre_ping=True
-    )
+
+    if IS_SERVERLESS:
+        # Serverless: use NullPool (no persistent connections between invocations)
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"ssl_context": ssl_context},
+            poolclass=pool.NullPool,
+        )
+    else:
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"ssl_context": ssl_context},
+            pool_size=5,
+            max_overflow=5,
+            pool_pre_ping=True
+        )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

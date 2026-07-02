@@ -15,19 +15,28 @@ if parser_dir not in sys.path:
 
 startup_error = None
 try:
+    from contextlib import asynccontextmanager
     from app.core.config import settings
     from app.core.database import engine
     from app.models.models import Base
     from app.api import auth, jobs
 
-    # Create database tables automatically on startup
-    logger.info("Initializing database tables...")
-    Base.metadata.create_all(bind=engine)
+    @asynccontextmanager
+    async def lifespan(application):
+        # Create tables on first startup
+        try:
+            logger.info("Initializing database tables...")
+            Base.metadata.create_all(bind=engine)
+            logger.info("Database tables ready.")
+        except Exception as db_err:
+            logger.warning(f"Table creation skipped (may already exist): {db_err}")
+        yield
 
     app = FastAPI(
         title=settings.APP_NAME,
         version=settings.PROJECT_VERSION,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        lifespan=lifespan
     )
 
     # CORS Policy configuration
@@ -59,6 +68,15 @@ try:
             "service": settings.APP_NAME,
             "version": settings.PROJECT_VERSION
         }
+
+    @app.get("/api/v1/init-db")
+    def init_db():
+        """Manually trigger database table creation."""
+        try:
+            Base.metadata.create_all(bind=engine)
+            return {"status": "ok", "message": "Database tables created successfully."}
+        except Exception as err:
+            return {"status": "error", "message": str(err)}
 
 except Exception as e:
     import traceback
