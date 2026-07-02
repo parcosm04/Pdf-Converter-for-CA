@@ -40,7 +40,7 @@ export default function DashboardPage() {
   const [activeJobStatus, setActiveJobStatus] = useState<string>("");
   const [uploadError, setUploadError] = useState("");
 
-  const API_URL = "http://localhost:8000/api/v1";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
   // Redirect if not logged in
   useEffect(() => {
