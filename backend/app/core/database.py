@@ -1,5 +1,4 @@
 import os
-import ssl
 from sqlalchemy import create_engine, pool
 from sqlalchemy.orm import sessionmaker
 from loguru import logger
@@ -12,26 +11,24 @@ IS_SERVERLESS = os.getenv("VERCEL", "") == "1"
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
-    # Auto-adjust postgresql schema for pg8000 on cloud deployments (Vercel)
-    if DATABASE_URL.startswith("postgresql://"):
-        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+pg8000://", 1)
-    elif DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+pg8000://", 1)
+    # Fix common Heroku/Supabase postgres:// scheme (SQLAlchemy requires postgresql://)
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-    # pg8000 requires explicit SSL context for cloud-hosted databases (Supabase, Neon, etc.)
-    ssl_context = ssl.create_default_context()
+    # Ensure SSL is enabled for cloud-hosted databases
+    if "sslmode" not in DATABASE_URL:
+        separator = "&" if "?" in DATABASE_URL else "?"
+        DATABASE_URL = DATABASE_URL + separator + "sslmode=require"
 
     if IS_SERVERLESS:
         # Serverless: use NullPool (no persistent connections between invocations)
         engine = create_engine(
             DATABASE_URL,
-            connect_args={"ssl_context": ssl_context},
             poolclass=pool.NullPool,
         )
     else:
         engine = create_engine(
             DATABASE_URL,
-            connect_args={"ssl_context": ssl_context},
             pool_size=5,
             max_overflow=5,
             pool_pre_ping=True
