@@ -4,11 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-# Add parser path to sys.path so flat imports (from config import config) resolve correctly
+# Add current backend dir and parser path to sys.path so all imports resolve correctly
 current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
 parser_dir = os.path.abspath(os.path.join(current_dir, "app", "services", "parser"))
 if parser_dir not in sys.path:
     sys.path.insert(0, parser_dir)
+
 
 from app.core.config import settings
 from app.core.database import engine
