@@ -87,7 +87,9 @@ except Exception as e:
             await send({
                 'type': 'http.response.body',
                 'body': json.dumps(err_data).encode('utf-8'),
+                'more_body': False
             })
+
 
 
 
