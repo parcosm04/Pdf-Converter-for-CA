@@ -13,42 +13,61 @@ if parser_dir not in sys.path:
     sys.path.insert(0, parser_dir)
 
 
-from app.core.config import settings
-from app.core.database import engine
-from app.models.models import Base
-from app.api import auth, jobs
+startup_error = None
+try:
+    from app.core.config import settings
+    from app.core.database import engine
+    from app.models.models import Base
+    from app.api import auth, jobs
 
-# Create database tables automatically if using a local sqlite engine (useful for tests/quick dev)
-if settings.DATABASE_URL.startswith("sqlite"):
-    logger.info("Initializing sqlite database tables...")
-    Base.metadata.create_all(bind=engine)
+    # Create database tables automatically if using a local sqlite engine (useful for tests/quick dev)
+    if settings.DATABASE_URL.startswith("sqlite"):
+        logger.info("Initializing sqlite database tables...")
+        Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.PROJECT_VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json"
-)
+    app = FastAPI(
+        title=settings.APP_NAME,
+        version=settings.PROJECT_VERSION,
+        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    )
 
-# CORS Policy configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+    # CORS Policy configuration
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-# Include endpoint modules
-app.include_router(auth.router, prefix=settings.API_V1_STR)
-app.include_router(jobs.router, prefix=settings.API_V1_STR)
+    # Include endpoint modules
+    app.include_router(auth.router, prefix=settings.API_V1_STR)
+    app.include_router(jobs.router, prefix=settings.API_V1_STR)
 
-@app.get("/")
-def root_endpoint():
-    """
-    Service health check endpoint.
-    """
-    return {
-        "status": "online",
-        "service": settings.APP_NAME,
-        "version": settings.PROJECT_VERSION
-    }
+    @app.get("/")
+    def root_endpoint():
+        """
+        Service health check endpoint.
+        """
+        return {
+            "status": "online",
+            "service": settings.APP_NAME,
+            "version": settings.PROJECT_VERSION
+        }
+
+except Exception as e:
+    import traceback
+    startup_error = traceback.format_exc()
+    logger.error(f"FastAPI Startup Error: {startup_error}")
+    
+    app = FastAPI(title="UBSP Fallback Diagnostics")
+    
+    @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"])
+    def diagnostics_fallback(path: str):
+        return {
+            "status": "error",
+            "message": "FastAPI failed to start up on server.",
+            "error_details": str(e),
+            "traceback": startup_error.split("\n")
+        }
+
