@@ -65,7 +65,7 @@ except Exception as e:
         if scope['type'] == 'http':
             await send({
                 'type': 'http.response.start',
-                'status': 500,
+                'status': 200,
                 'headers': [
                     (b'content-type', b'application/json'),
                     (b'access-control-allow-origin', b'*'),
@@ -82,5 +82,6 @@ except Exception as e:
                 'type': 'http.response.body',
                 'body': json.dumps(err_data).encode('utf-8'),
             })
+
 
 
