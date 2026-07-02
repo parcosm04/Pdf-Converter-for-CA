@@ -17,12 +17,13 @@ class Settings(BaseSettings):
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     
     # Storage Configuration
-    UPLOAD_DIR: str = os.getenv("UPLOAD_DIR", "storage/uploads")
-    EXCEL_OUTPUT_DIR: str = os.getenv("EXCEL_OUTPUT_DIR", "storage/outputs")
+    UPLOAD_DIR: str = "/tmp/uploads" if os.getenv("VERCEL") == "1" else os.getenv("UPLOAD_DIR", "storage/uploads")
+    EXCEL_OUTPUT_DIR: str = "/tmp/outputs" if os.getenv("VERCEL") == "1" else os.getenv("EXCEL_OUTPUT_DIR", "storage/outputs")
     
     # Ingestion Rules
     MAX_FILE_SIZE_MB: int = 50  # Max PDF size allowed in MB
     FILE_RETENTION_HOURS: int = 24  # Time before uploaded & parsed files are permanently deleted
+
     
     model_config = SettingsConfigDict(env_prefix="UBSP_")
 
