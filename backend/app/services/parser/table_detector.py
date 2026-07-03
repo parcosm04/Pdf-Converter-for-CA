@@ -9,6 +9,7 @@ class TableDetector:
         self.column_boundaries: List[Tuple[str, float, float]] = []
         self.header_y: Optional[float] = None
         self.footer_y: Optional[float] = None
+        self.table_ended: bool = False
 
     def group_words_into_lines(self, words: List[Dict[str, Any]], y_tolerance: float = 3.0) -> List[List[Dict[str, Any]]]:
         """
@@ -106,6 +107,10 @@ class TableDetector:
           table_start_y: Y coordinate below header
           table_end_y: Y coordinate above footer/totals
         """
+        if self.table_ended:
+            logger.info("Table has already ended on a previous page. Skipping table detection.")
+            return [], 0.0, 0.0
+            
         # Group words using a larger Y-tolerance of 8.0 to group multi-line headers together
         lines = self.group_words_into_lines(words, y_tolerance=8.0)
         
@@ -298,9 +303,10 @@ class TableDetector:
             line_text = " ".join(w["text"] for w in line).lower()
             
             # Table end markers (e.g. summary and grand totals block) - can appear anywhere on the page
-            table_end_keywords = ["statement summary", "summary", "opening balance", "grand total", "other account details", "linked casa", "linked deposits", "linked loan"]
+            table_end_keywords = ["statement summary", "summary", "grand total", "other account details", "linked casa", "linked deposits", "linked loan", "total debits", "total credits", "total debit", "total credit", "closing balance"]
             if any(term in line_text for term in table_end_keywords):
                 table_end_y = line[0]["top"]
+                self.table_ended = True
                 logger.info(f"Table end marker detected at Y={table_end_y:.2f} text: '{line_text}'")
                 break
                 

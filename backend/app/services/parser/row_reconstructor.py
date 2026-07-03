@@ -17,7 +17,7 @@ def reconstruct_rows(
     # 1. Filter words within vertical table limits
     table_words = [
         w for w in words
-        if table_start_y <= w["top"] <= table_end_y
+        if table_start_y <= w["top"] < table_end_y - 1.0
     ]
     
     if not table_words:
