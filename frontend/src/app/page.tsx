@@ -104,7 +104,7 @@ export default function DashboardPage() {
                 setActiveJobId(null);
                 setUploading(false);
                 fetchDashboardData();
-              }, 4000);
+              }, 500);
             } else {
               setActiveJobId(null);
               setUploading(false);
@@ -117,7 +117,7 @@ export default function DashboardPage() {
         setActiveJobId(null);
         setUploading(false);
       }
-    }, 2000);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [activeJobId, token, fetchDashboardData, API_URL]);
