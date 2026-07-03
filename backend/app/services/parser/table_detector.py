@@ -111,29 +111,68 @@ class TableDetector:
         
         header_line_idx = -1
         detected_mappings: List[Tuple[str, float, float]] = []
+        table_start_y_custom = None
         
-        # 1. Search for the header line
-        for idx, line in enumerate(lines):
+        # Helper to extract matches from a line
+        def get_line_matches(line):
             phrases = self._group_line_into_phrases(line)
             matches = []
-            
             for p in phrases:
                 col_key = self._match_column(p["text"])
                 if col_key:
                     matches.append((col_key, p["x0"], p["x1"]))
-            
-            # Require at least 3 distinct column matches (e.g., date, narration, balance)
+            return matches
+
+        # 1. Search for the header line - First try single lines
+        for idx, line in enumerate(lines):
+            matches = get_line_matches(line)
             unique_keys = {m[0] for m in matches}
-            if len(unique_keys) >= 3 and "date" in unique_keys and ("closing_balance" in unique_keys or "balance" in unique_keys or "debit" in unique_keys or "credit" in unique_keys):
+            if len(unique_keys) >= 3 and "date" in unique_keys and ("closing_balance" in unique_keys or "debit" in unique_keys or "credit" in unique_keys or "amount" in unique_keys):
                 header_line_idx = idx
                 detected_mappings = matches
-                logger.info(f"Header row detected on page at Y={line[0]['top']:.2f} text: {[p['text'] for p in phrases]}")
+                logger.info(f"Header row detected on page at Y={line[0]['top']:.2f} text: {[w['text'] for w in line]}")
                 break
                 
+        # 1b. Split header detection - if not found, try combining adjacent lines
+        if header_line_idx == -1:
+            for idx in range(len(lines) - 1):
+                line1 = lines[idx]
+                line2 = lines[idx+1]
+                
+                # Check that they are physically close (e.g. within 25 points)
+                y_gap = line2[0]["top"] - max(w["bottom"] for w in line1)
+                if y_gap > 25.0:
+                    continue
+                    
+                matches1 = get_line_matches(line1)
+                matches2 = get_line_matches(line2)
+                
+                combined_matches = matches1 + matches2
+                unique_keys = {m[0] for m in combined_matches}
+                
+                if len(unique_keys) >= 3 and "date" in unique_keys and ("closing_balance" in unique_keys or "debit" in unique_keys or "credit" in unique_keys or "amount" in unique_keys):
+                    header_line_idx = idx
+                    # Merge column matches, keeping the widest boundary for duplicates
+                    key_to_coords = {}
+                    for col_key, x0, x1 in combined_matches:
+                        if col_key not in key_to_coords:
+                            key_to_coords[col_key] = (x0, x1)
+                        else:
+                            prev_x0, prev_x1 = key_to_coords[col_key]
+                            key_to_coords[col_key] = (min(prev_x0, x0), max(prev_x1, x1))
+                    
+                    detected_mappings = [(k, coords[0], coords[1]) for k, coords in key_to_coords.items()]
+                    table_start_y_custom = max(w["bottom"] for w in line2)
+                    logger.info(f"Split header row detected spanning Y={line1[0]['top']:.2f} and Y={line2[0]['top']:.2f}")
+                    break
+                    
         # 2. Determine column boundaries if header is found
         if header_line_idx != -1:
-            header_line = lines[header_line_idx]
-            table_start_y = max(w["bottom"] for w in header_line)
+            if table_start_y_custom is not None:
+                table_start_y = table_start_y_custom
+            else:
+                header_line = lines[header_line_idx]
+                table_start_y = max(w["bottom"] for w in header_line)
             
             # Sort detected columns by their X center coordinates
             detected_mappings = sorted(detected_mappings, key=lambda m: (m[1] + m[2]) / 2.0)
@@ -209,7 +248,6 @@ class TableDetector:
                 logger.warning("No header row detected, and no previous boundaries. Defaulting to standard intervals.")
                 # Standard default boundaries (ratios of page width)
                 # Date, Narration, Ref, Val Date, Debit, Credit, Balance
-                table_start_y = page_height * 0.15
                 w = page_width
                 self.column_boundaries = [
                     ("date", 0.0, w * 0.12),
@@ -220,6 +258,36 @@ class TableDetector:
                     ("credit", w * 0.78, w * 0.88),
                     ("closing_balance", w * 0.88, w)
                 ]
+                
+                # Fallback: scan lines to find the first transaction row to avoid header noise
+                import re
+                date_regex = re.compile(config.NEW_TRANSACTION_REGEX)
+                first_txn_y = None
+                
+                row_lines = self.group_words_into_lines(words, y_tolerance=3.0)
+                for rline in row_lines:
+                    left_words = [word for word in rline if word["x0"] < page_width * 0.25]
+                    left_words_sorted = sorted(left_words, key=lambda word: word["x0"])
+                    if left_words_sorted:
+                        word_texts = [word["text"] for word in left_words_sorted[:3]]
+                        found = False
+                        for start_idx in range(len(word_texts)):
+                            candidate = " ".join(word_texts[start_idx:])
+                            parts = candidate.split()
+                            if len(parts) > 1 and parts[0].isdigit() and len(parts[0]) <= 4:
+                                remainder = " ".join(parts[1:])
+                                if date_regex.match(remainder):
+                                    found = True
+                                    break
+                            if date_regex.match(candidate):
+                                found = True
+                                break
+                        if found:
+                            first_txn_y = min(word["top"] for word in left_words_sorted)
+                            logger.info(f"Fallback scan: First transaction row date detected at Y={first_txn_y:.2f}")
+                            break
+                            
+                table_start_y = first_txn_y - 2.0 if first_txn_y is not None else page_height * 0.15
                 
         # 3. Detect footer / end of table
         table_end_y = page_height
