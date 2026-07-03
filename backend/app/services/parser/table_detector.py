@@ -298,7 +298,7 @@ class TableDetector:
             line_text = " ".join(w["text"] for w in line).lower()
             
             # Table end markers (e.g. summary and grand totals block) - can appear anywhere on the page
-            table_end_keywords = ["statement summary", "summary :-", "summary:", "opening balance", "grand total"]
+            table_end_keywords = ["statement summary", "summary", "opening balance", "grand total", "other account details", "linked casa", "linked deposits", "linked loan"]
             if any(term in line_text for term in table_end_keywords):
                 table_end_y = line[0]["top"]
                 logger.info(f"Table end marker detected at Y={table_end_y:.2f} text: '{line_text}'")

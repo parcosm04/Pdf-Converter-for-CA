@@ -3,6 +3,7 @@ from datetime import date
 from decimal import Decimal
 from transaction_parser import parse_transactions_stream
 from models import Transaction
+from utils import parse_amount
 
 def test_parse_transactions_stream():
     # 2 pages of data:
@@ -148,3 +149,9 @@ def test_parse_alphabetic_month_dates():
     assert txns[0].date == date(2026, 6, 1)
     assert txns[1].date == date(2026, 6, 2)
     assert txns[2].date == date(2026, 6, 3)
+
+def test_parse_amount_dr_cr():
+    assert parse_amount("278.23 Cr") == Decimal("278.23")
+    assert parse_amount("63.23 Cr") == Decimal("63.23")
+    assert parse_amount("100.50 Dr") == Decimal("-100.50")
+    assert parse_amount("50.00 DR") == Decimal("-50.00")

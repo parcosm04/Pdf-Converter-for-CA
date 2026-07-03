@@ -21,9 +21,12 @@ def parse_amount(val: Optional[str]) -> Optional[Decimal]:
         
     # Check if enclosed in parentheses (often indicates negative or debit)
     is_negative = False
+    cleaned_lower = cleaned.lower()
     if cleaned.startswith("(") and cleaned.endswith(")"):
         is_negative = True
         cleaned = cleaned[1:-1]
+    elif "dr" in cleaned_lower or "debit" in cleaned_lower:
+        is_negative = True
         
     # Remove common currency symbols (INR, $, etc.)
     cleaned = re.sub(r"[^\d\.\-\+]", "", cleaned)
