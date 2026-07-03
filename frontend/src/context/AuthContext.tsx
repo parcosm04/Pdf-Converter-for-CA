@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Check for stored token on client mount
   useEffect(() => {
-    const storedToken = localStorage.getItem("ubsp_token");
+    const storedToken = localStorage.getItem("finextract_token");
     if (storedToken) {
       setToken(storedToken);
       fetchUserProfile(storedToken);
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (newToken: string) => {
-    localStorage.setItem("ubsp_token", newToken);
+    localStorage.setItem("finextract_token", newToken);
     setToken(newToken);
     setLoading(true);
     await fetchUserProfile(newToken);
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("ubsp_token");
+    localStorage.removeItem("finextract_token");
     setToken(null);
     setUser(null);
     setLoading(false);

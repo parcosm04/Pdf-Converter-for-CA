@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Universal Bank Statement Parser (UBSP)",
-  description: "Enterprise-grade bank statement document processing and auditing SaaS",
+  title: "FinExtract | Smart Financial Parsing",
+  description: "Modern financial document parsing and reconciliation platform",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
     <html lang="en">
       <body
         suppressHydrationWarning
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#020617] text-slate-100 min-h-screen selection:bg-cyan-500/30`}
       >
         <AuthProvider>{children}</AuthProvider>
       </body>

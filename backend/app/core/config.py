@@ -3,7 +3,7 @@ import os
 
 class Settings(BaseSettings):
     # App General Settings
-    APP_NAME: str = "Universal Bank Statement Parser (UBSP)"
+    APP_NAME: str = "FinExtract API"
     PROJECT_VERSION: str = "1.0.0"
     API_V1_STR: str = "/api/v1"
     
