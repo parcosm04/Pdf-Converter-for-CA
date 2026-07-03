@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
-const SparkleStar = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+const SparkleStar = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
     <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 12 24C12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
   </svg>
 );
@@ -77,13 +77,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen text-white font-sans overflow-hidden selection:bg-[#DCA846]/30 bg-[#121212]">
+    <div className="relative flex min-h-screen text-white font-sans overflow-hidden selection:bg-[#DCA846]/30 bg-black">
       
-      {/* RICH DILOCASH BACKGROUND GRADIENT */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_50%,_#3A2E1C_0%,_#18181A_50%,_#121212_100%)]" />
+      {/* DARK BLACK BACKGROUND WITH GOLD GLOW */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_50%,_#2A2112_0%,_#050505_50%,_#000000_100%)]" />
 
       {/* Extra floating glow behind form */}
-      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.12] blur-[120px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.10] blur-[120px] rounded-full pointer-events-none z-0" />
 
       <SparkleStar className="absolute top-[20%] left-[25%] w-6 h-6 text-[#DCA846] opacity-90 z-0 animate-pulse" />
       <SparkleStar className="absolute top-[70%] right-[25%] w-4 h-4 text-[#DCA846] opacity-70 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
@@ -98,7 +98,7 @@ export default function LoginPage() {
           <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-6">
             Secure & Smart <br /> Access Portal
           </h1>
-          <p className="text-slate-300 text-base leading-relaxed mb-10 font-normal max-w-md">
+          <p className="text-slate-400 text-base leading-relaxed mb-10 font-normal max-w-md">
             Join the platform that simplifies digital data extraction. Manage all your financial statement parsing in one premium ecosystem.
           </p>
         </div>
@@ -110,8 +110,8 @@ export default function LoginPage() {
           transition={{ duration: 0.6 }}
           className="w-full max-w-[440px] lg:w-1/2"
         >
-          <div className="rounded-[2rem] bg-gradient-to-br from-[#252525] to-[#151515] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative">
-            <div className="bg-[#18181A] rounded-[2rem] p-10 relative z-10 border border-white/5">
+          <div className="rounded-[2rem] bg-gradient-to-br from-[#222222] to-[#0A0A0A] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.9)] relative">
+            <div className="bg-[#111111] rounded-[2rem] p-10 relative z-10 border border-white/5">
               
               <div className="lg:hidden font-bold tracking-tight text-2xl text-white mb-8 text-center">
                 Fin<span className="text-[#DCA846]">Extract</span>
@@ -121,7 +121,7 @@ export default function LoginPage() {
                 <h3 className="text-3xl font-bold text-white tracking-tight mb-2">
                   {isRegister ? "Create Account" : "Welcome Back"}
                 </h3>
-                <p className="text-sm text-slate-400 font-medium">
+                <p className="text-sm text-slate-500 font-medium">
                   {isRegister ? "Sign up to start extracting your data." : "Enter your credentials to access your dashboard."}
                 </p>
               </div>
@@ -139,25 +139,25 @@ export default function LoginPage() {
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-2">Email Address</label>
+                    <label className="block text-sm font-semibold text-slate-400 mb-2">Email Address</label>
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full rounded-2xl border border-white/5 bg-[#222222] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
+                      className="block w-full rounded-2xl border border-white/5 bg-[#1A1A1A] px-5 py-4 text-sm text-white placeholder-slate-600 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
                       placeholder="name@company.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-slate-300 mb-2">Password</label>
+                    <label className="block text-sm font-semibold text-slate-400 mb-2">Password</label>
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-2xl border border-white/5 bg-[#222222] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
+                      className="block w-full rounded-2xl border border-white/5 bg-[#1A1A1A] px-5 py-4 text-sm text-white placeholder-slate-600 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
                       placeholder="••••••••"
                     />
                   </div>
@@ -167,10 +167,10 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center rounded-full bg-[#DCA846] px-4 py-4 text-sm font-bold text-[#121212] hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_10px_20px_rgba(220,168,70,0.2)]"
+                    className="w-full flex items-center justify-center rounded-full bg-[#DCA846] px-4 py-4 text-sm font-bold text-black hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_10px_20px_rgba(220,168,70,0.2)]"
                   >
                     {loading ? (
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#121212]" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-black" />
                     ) : (
                       isRegister ? "Sign Up" : "Log In"
                     )}
@@ -179,7 +179,7 @@ export default function LoginPage() {
               </form>
 
               <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center justify-center text-sm font-medium">
-                <span className="text-slate-400 mb-2">
+                <span className="text-slate-500 mb-2">
                   {isRegister ? "Already have an account?" : "Don't have an account?"}
                 </span>
                 <button

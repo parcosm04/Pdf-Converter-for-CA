@@ -29,9 +29,9 @@ interface Stats {
   audit_pass_rate: number;
 }
 
-const SparkleStar = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 12 24C12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
+const SparkleStar = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
+    <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
   </svg>
 );
 
@@ -166,7 +166,7 @@ export default function DashboardPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#121212]">
+      <div className="flex min-h-screen items-center justify-center bg-black">
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
           <div className="w-12 h-12 rounded-full border-t-2 border-r-2 border-[#DCA846]" />
         </motion.div>
@@ -175,16 +175,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="relative min-h-screen text-white font-sans overflow-x-hidden selection:bg-[#DCA846]/30 bg-[#121212]">
+    <div className="relative min-h-screen text-white font-sans overflow-x-hidden selection:bg-[#DCA846]/30 bg-black">
       
       {/* 
-        RICH, HIGH-VISIBILITY DILOCASH BACKGROUND GRADIENT
-        This provides that beautiful, immersive warm gold glow that fades smoothly into the dark charcoal.
+        DARK BLACK BACKGROUND WITH SOFT GOLD GLOW
+        Fades perfectly into pure #000000 black at the edges.
       */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_40%,_#3A2E1C_0%,_#18181A_50%,_#121212_100%)]" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_40%,_#2A2112_0%,_#050505_50%,_#000000_100%)]" />
 
       {/* Extra floating glow behind the extraction block to give it a 3D pop */}
-      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.15] blur-[120px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.10] blur-[120px] rounded-full pointer-events-none z-0" />
 
       {/* Decorative Smooth Stars */}
       <SparkleStar className="absolute top-[25%] left-[45%] w-6 h-6 text-[#DCA846] opacity-90 z-0 animate-pulse" />
@@ -200,20 +200,20 @@ export default function DashboardPage() {
             </span>
           </div>
           
-          <nav className="hidden lg:flex items-center space-x-10 text-sm font-medium text-slate-300">
+          <nav className="hidden lg:flex items-center space-x-10 text-sm font-medium text-slate-400">
             <a href="#" className="hover:text-white transition-colors">Service</a>
             <a href="#" className="hover:text-white transition-colors">How It Work</a>
             <a href="#" className="hover:text-white transition-colors">Benefits</a>
           </nav>
 
           <div className="flex items-center space-x-6 text-sm font-medium">
-            <div className="hidden sm:flex items-center space-x-2 text-slate-300">
+            <div className="hidden sm:flex items-center space-x-2 text-slate-400">
               <User className="h-4 w-4" />
               <span>{user.email}</span>
             </div>
             <button
               onClick={logout}
-              className="px-6 py-2 rounded-full border border-[#DCA846] text-[#DCA846] hover:bg-[#DCA846] hover:text-[#121212] transition-all font-semibold"
+              className="px-6 py-2 rounded-full border border-[#DCA846] text-[#DCA846] hover:bg-[#DCA846] hover:text-black transition-all font-semibold"
             >
               Log Out
             </button>
@@ -241,7 +241,7 @@ export default function DashboardPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-lg mb-10 font-normal"
+              className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-lg mb-10 font-normal"
             >
               Easily convert and extract unstructured financial statements into clean, actionable Excel data. Drop your file, and let the system handle the reconciliation instantly.
             </motion.p>
@@ -254,7 +254,7 @@ export default function DashboardPage() {
             >
               <button 
                 onClick={() => document.getElementById('upload-input')?.click()}
-                className="px-8 py-3.5 bg-[#DCA846] text-[#121212] font-bold rounded-full hover:brightness-110 transition-all shadow-[0_10px_30px_rgba(220,168,70,0.3)] flex items-center"
+                className="px-8 py-3.5 bg-[#DCA846] text-black font-bold rounded-full hover:brightness-110 transition-all shadow-[0_10px_30px_rgba(220,168,70,0.3)] flex items-center"
               >
                 Start Extraction
                 <ArrowRight className="w-4 h-4 ml-2" />
@@ -277,12 +277,12 @@ export default function DashboardPage() {
               <div className="flex flex-col max-w-[200px]">
                 <span className="text-[#DCA846] font-bold text-xl mb-1">01</span>
                 <span className="text-white font-semibold text-base mb-1">Financial Processing</span>
-                <span className="text-slate-400 text-xs leading-relaxed">Manage everything from this simple dashboard interface.</span>
+                <span className="text-slate-500 text-xs leading-relaxed">Manage everything from this simple dashboard interface.</span>
               </div>
               <div className="flex flex-col max-w-[200px]">
                 <span className="text-[#DCA846] font-bold text-xl mb-1">02</span>
                 <span className="text-white font-semibold text-base mb-1">Easy To Use System</span>
-                <span className="text-slate-400 text-xs leading-relaxed">Each upload delivers clean, balanced tabular records instantly.</span>
+                <span className="text-slate-500 text-xs leading-relaxed">Each upload delivers clean, balanced tabular records instantly.</span>
               </div>
             </motion.div>
           </div>
@@ -307,13 +307,13 @@ export default function DashboardPage() {
                 </svg>
               </div>
               <div className="w-10 h-10 rounded-full bg-[#DCA846] flex items-center justify-center z-10 shadow-lg">
-                <Check className="w-5 h-5 text-[#121212]" />
+                <Check className="w-5 h-5 text-black" />
               </div>
             </div>
 
             {/* Active Users Block */}
-            <div className="absolute -bottom-4 right-8 z-20 flex items-center bg-[#18181A]/90 backdrop-blur-md border border-[#DCA846]/30 rounded-full p-2 pr-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-              <div className="bg-[#DCA846] text-[#121212] font-bold text-lg px-4 py-1.5 rounded-full mr-3">
+            <div className="absolute -bottom-4 right-8 z-20 flex items-center bg-[#111111]/90 backdrop-blur-md border border-[#DCA846]/30 rounded-full p-2 pr-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
+              <div className="bg-[#DCA846] text-black font-bold text-lg px-4 py-1.5 rounded-full mr-3">
                 {stats?.total_jobs ? `${stats.total_jobs}K` : '1.24M'}
               </div>
               <div className="flex flex-col justify-center">
@@ -323,8 +323,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Main Dropzone Container */}
-            <div className="w-full max-w-[460px] rounded-[2rem] bg-gradient-to-br from-[#252525] to-[#151515] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative z-10">
-              <div className="w-full h-full bg-[#18181A] rounded-[2rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+            <div className="w-full max-w-[460px] rounded-[2rem] bg-gradient-to-br from-[#222222] to-[#0A0A0A] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.9)] relative z-10">
+              <div className="w-full h-full bg-[#111111] rounded-[2rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
                 
                 {uploading ? (
                   <div className="py-12 flex flex-col items-center space-y-6">
@@ -341,7 +341,7 @@ export default function DashboardPage() {
                         <motion.p 
                           initial={{ opacity: 0, y: 10 }} 
                           animate={{ opacity: 1, y: 0 }} 
-                          className="text-emerald-400 text-sm font-semibold mt-6 bg-emerald-400/10 px-5 py-2.5 rounded-full"
+                          className="text-emerald-400 text-sm font-semibold mt-6 bg-emerald-400/10 px-5 py-2.5 rounded-full border border-emerald-400/20"
                         >
                           Ready! Awaiting Excel download below.
                         </motion.p>
@@ -353,11 +353,11 @@ export default function DashboardPage() {
                     onClick={() => document.getElementById('upload-input')?.click()}
                     className="py-12 w-full flex flex-col items-center justify-center cursor-pointer transition-all"
                   >
-                    <div className="w-24 h-24 rounded-[1.5rem] bg-[#222222] shadow-inner flex items-center justify-center mb-6 group-hover:-translate-y-2 group-hover:shadow-[0_10px_30px_rgba(220,168,70,0.15)] transition-all duration-500 border border-white/5">
+                    <div className="w-24 h-24 rounded-[1.5rem] bg-[#1A1A1A] shadow-inner flex items-center justify-center mb-6 group-hover:-translate-y-2 group-hover:shadow-[0_10px_30px_rgba(220,168,70,0.15)] transition-all duration-500 border border-white/5">
                       <Upload className="w-10 h-10 text-[#DCA846]" />
                     </div>
                     <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Upload PDF Document</h3>
-                    <p className="text-sm text-slate-400 font-medium">Click to browse (Up to 50MB)</p>
+                    <p className="text-sm text-slate-500 font-medium">Click to browse (Up to 50MB)</p>
                     <input
                       id="upload-input"
                       type="file"
@@ -384,19 +384,19 @@ export default function DashboardPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 px-2">
             <div>
               <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Recent Extractions</h2>
-              <p className="text-slate-400 text-sm font-medium">Track your processed files and download the output.</p>
+              <p className="text-slate-500 text-sm font-medium">Track your processed files and download the output.</p>
             </div>
           </div>
 
-          <div className="w-full rounded-3xl bg-[#18181A] shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden border border-white/5">
+          <div className="w-full rounded-3xl bg-[#111111] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden border border-white/5">
             {loading ? (
-              <div className="py-24 flex flex-col items-center justify-center text-slate-400">
+              <div className="py-24 flex flex-col items-center justify-center text-slate-500">
                 <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-[#DCA846] animate-spin mb-4" />
                 <span className="font-medium text-sm">Loading records...</span>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="py-24 text-center text-slate-400 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-[#222222] flex items-center justify-center mb-4">
+              <div className="py-24 text-center text-slate-500 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-[#1A1A1A] flex items-center justify-center mb-4">
                   <FileText className="w-6 h-6 text-slate-600" />
                 </div>
                 <p className="font-medium">No documents processed yet. Upload to begin.</p>
@@ -405,21 +405,21 @@ export default function DashboardPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left whitespace-nowrap">
                   <thead>
-                    <tr className="border-b border-white/5 bg-[#141414]">
-                      <th className="py-5 pl-10 pr-4 text-xs font-bold uppercase tracking-wider text-slate-500">Document Name</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Transactions</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Validation</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</th>
-                      <th className="py-5 pr-10 pl-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Action</th>
+                    <tr className="border-b border-white/5 bg-[#0A0A0A]">
+                      <th className="py-5 pl-10 pr-4 text-xs font-bold uppercase tracking-wider text-slate-600">Document Name</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Status</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Transactions</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Validation</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Date</th>
+                      <th className="py-5 pr-10 pl-4 text-right text-xs font-bold uppercase tracking-wider text-slate-600">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {jobs.map((job) => (
-                      <tr key={job.id} className="hover:bg-[#1E1E1E] transition-colors group">
+                      <tr key={job.id} className="hover:bg-[#151515] transition-colors group">
                         <td className="py-6 pl-10 pr-4">
                           <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-xl bg-[#252525] flex items-center justify-center border border-white/5">
+                            <div className="w-10 h-10 rounded-xl bg-[#1A1A1A] flex items-center justify-center border border-white/5">
                               <FileText className="w-4 h-4 text-[#DCA846]" />
                             </div>
                             <span className="font-semibold text-white truncate max-w-[200px]">{job.original_filename}</span>
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                             <span className="text-slate-500 text-sm font-medium">Pending</span>
                           )}
                         </td>
-                        <td className="py-6 px-4 text-sm font-medium text-slate-400">
+                        <td className="py-6 px-4 text-sm font-medium text-slate-500">
                           {new Date(job.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </td>
                         <td className="py-6 pr-10 pl-4 text-right">
@@ -457,7 +457,7 @@ export default function DashboardPage() {
                               href={`${API_URL}/jobs/${job.id}/download?token=${token}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#DCA846] text-[#121212] font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_5px_15px_rgba(220,168,70,0.2)]"
+                              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#DCA846] text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_5px_15px_rgba(220,168,70,0.2)]"
                             >
                               Download CSV
                             </a>
