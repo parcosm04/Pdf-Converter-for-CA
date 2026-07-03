@@ -5,9 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Playfair_Display } from "next/font/google";
 
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"] });
+const SparkleStar = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 12 24C12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
+  </svg>
+);
 
 export default function LoginPage() {
   const { user, login } = useAuth();
@@ -74,82 +77,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen bg-[#030303] text-white font-sans overflow-hidden selection:bg-[#BF953F]/30">
+    <div className="relative flex min-h-screen bg-[#252525] text-white font-sans overflow-hidden selection:bg-[#E3B755]/30">
       
-      {/* --- Ultra-Premium Background Effects --- */}
-      {/* Tech Grid Pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0" 
-           style={{ backgroundImage: 'linear-gradient(#BF953F 1px, transparent 1px), linear-gradient(90deg, #BF953F 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      
-      {/* Deep Gold Glows */}
-      <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] bg-[#BF953F] opacity-[0.06] blur-[150px] rounded-full pointer-events-none z-0 mix-blend-screen" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] bg-[#AA771C] opacity-[0.08] blur-[120px] rounded-full pointer-events-none z-0 mix-blend-screen" />
+      {/* Super Smooth Glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center">
+        <div className="w-[80vw] h-[80vw] bg-[#E3B755] opacity-[0.08] blur-[150px] rounded-full mix-blend-screen" />
+      </div>
 
-      {/* Decorative Line */}
-      <div className="absolute left-16 top-0 w-[1px] h-full bg-gradient-to-b from-transparent via-[#BF953F]/20 to-transparent z-0 hidden lg:block" />
+      <SparkleStar className="absolute top-[20%] left-[25%] w-5 h-5 text-[#E3B755] opacity-70 z-0 animate-pulse" />
+      <SparkleStar className="absolute top-[70%] right-[25%] w-4 h-4 text-[#E3B755] opacity-50 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
 
-      <div className="relative z-10 w-full flex flex-col lg:flex-row min-h-screen">
+      <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-center min-h-screen px-6 py-12">
         
         {/* Left Side: Branding */}
-        <div className="flex-1 flex flex-col justify-center px-10 lg:px-24 xl:px-32 relative z-20 py-16 lg:py-0">
-          <div className="mb-12">
-            <div className="w-12 h-12 rounded bg-gradient-to-br from-[#BF953F] to-[#AA771C] flex items-center justify-center shadow-[0_0_20px_rgba(191,149,63,0.4)] mb-6">
-              <span className={`${playfair.className} font-bold text-[#030303] text-2xl leading-none`}>F</span>
-            </div>
-            <h1 className={`${playfair.className} text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] mb-6`}>
-              <span className="block text-white mb-2">ACCESS THE</span>
-              <span className="block bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent">
-                GOLD STANDARD
-              </span>
-            </h1>
-            <p className="text-slate-400 text-sm max-w-md font-light leading-relaxed mb-10">
-              Enter the ecosystem designed for exclusive, high-precision financial data parsing and ledger management.
-            </p>
-
-            {/* Premium feature list */}
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full border border-[#BF953F]/40 flex items-center justify-center shrink-0 mt-1 shadow-[inset_0_0_10px_rgba(191,149,63,0.2)]">
-                  <span className="text-[#BF953F] text-xs font-bold">01</span>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest text-slate-200 mb-1">Encrypted Pipelines</h4>
-                  <p className="text-xs text-slate-500 max-w-[250px]">Your data is secured through military-grade hashing prior to extraction.</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-4">
-                <div className="w-8 h-8 rounded-full border border-[#BF953F]/40 flex items-center justify-center shrink-0 mt-1 shadow-[inset_0_0_10px_rgba(191,149,63,0.2)]">
-                  <span className="text-[#BF953F] text-xs font-bold">02</span>
-                </div>
-                <div>
-                  <h4 className="text-sm font-bold uppercase tracking-widest text-slate-200 mb-1">Guaranteed Precision</h4>
-                  <p className="text-xs text-slate-500 max-w-[250px]">Built-in balancing algorithms ensure zero loss of transactional data.</p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="hidden lg:flex flex-col justify-center w-1/2 pr-16 max-w-xl">
+          <span className="font-bold tracking-tight text-3xl text-white mb-8">
+            Fin<span className="text-[#E3B755]">Extract</span>
+          </span>
+          <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-6">
+            Secure & Smart <br /> Access Portal
+          </h1>
+          <p className="text-slate-300 text-base leading-relaxed mb-10 font-normal max-w-md">
+            Join the platform that simplifies digital data extraction. Manage all your financial statement parsing in one premium ecosystem.
+          </p>
         </div>
 
-        {/* Right Side: Form Block */}
-        <div className="flex-1 flex items-center justify-center p-6 lg:p-12 relative z-20">
-          
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="w-full max-w-md rounded-2xl bg-[#080808]/90 backdrop-blur-xl border border-[#BF953F]/30 shadow-[inset_0_0_30px_rgba(191,149,63,0.05),_0_20px_50px_rgba(0,0,0,0.8)] p-1 overflow-hidden"
-          >
-            {/* Inner Metallic Border */}
-            <div className="absolute inset-0 rounded-2xl border-[0.5px] border-white/5 pointer-events-none" />
-
-            <div className="bg-[#0B0B0B] rounded-xl p-8 sm:p-10 relative z-10">
+        {/* Right Side: Super Smooth Form Block */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-full max-w-[440px] lg:w-1/2"
+        >
+          <div className="rounded-[2rem] bg-gradient-to-br from-[#1E1E1E] to-[#151515] p-[2px] shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative">
+            <div className="bg-[#1C1C1C] rounded-[2rem] p-10 relative z-10">
               
-              <div className="mb-10 text-center">
-                <h3 className={`${playfair.className} text-3xl font-bold text-white mb-2`}>
-                  {isRegister ? "Join Ecosystem" : "Secure Login"}
+              <div className="lg:hidden font-bold tracking-tight text-2xl text-white mb-8 text-center">
+                Fin<span className="text-[#E3B755]">Extract</span>
+              </div>
+
+              <div className="mb-8">
+                <h3 className="text-3xl font-bold text-white tracking-tight mb-2">
+                  {isRegister ? "Create Account" : "Welcome Back"}
                 </h3>
-                <p className="text-xs text-[#BF953F] uppercase tracking-widest font-bold">
-                  {isRegister ? "Initialize new node credentials" : "Authenticate to proceed"}
+                <p className="text-sm text-slate-400 font-medium">
+                  {isRegister ? "Sign up to start extracting your data." : "Enter your credentials to access your dashboard."}
                 </p>
               </div>
 
@@ -157,7 +129,7 @@ export default function LoginPage() {
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className={`mb-8 border px-4 py-3 text-xs font-bold uppercase tracking-widest text-center rounded-sm ${error.includes("successfully") ? "border-emerald-500/30 bg-emerald-500/5 text-emerald-400" : "border-rose-500/30 bg-rose-500/5 text-rose-400"}`}
+                  className={`mb-6 rounded-2xl border px-4 py-3 text-sm font-medium flex items-center justify-center text-center ${error.includes("successfully") ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400" : "border-rose-500/30 bg-rose-500/10 text-rose-400"}`}
                 >
                   {error}
                 </motion.div>
@@ -166,48 +138,48 @@ export default function LoginPage() {
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="space-y-5">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Digital ID (Email)</label>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">Email Address</label>
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full rounded-sm border border-white/10 bg-[#111] px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:border-[#BF953F]/50 focus:bg-[#1A1A1A] focus:outline-none transition-colors shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
-                      placeholder="node@network.com"
+                      className="block w-full rounded-2xl border-none bg-[#252525] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#E3B755]/50 outline-none transition-shadow"
+                      placeholder="name@company.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Security Key</label>
+                    <label className="block text-sm font-semibold text-slate-300 mb-2">Password</label>
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-sm border border-white/10 bg-[#111] px-4 py-3.5 text-sm text-white placeholder-slate-600 focus:border-[#BF953F]/50 focus:bg-[#1A1A1A] focus:outline-none transition-colors shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
+                      className="block w-full rounded-2xl border-none bg-[#252525] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#E3B755]/50 outline-none transition-shadow"
                       placeholder="••••••••"
                     />
                   </div>
                 </div>
 
-                <div className="pt-4">
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center rounded-sm bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] px-4 py-4 text-xs font-bold text-[#030303] hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_0_20px_rgba(191,149,63,0.2)] uppercase tracking-widest"
+                    className="w-full flex items-center justify-center rounded-full bg-[#E3B755] px-4 py-4 text-sm font-bold text-[#1C1C1C] hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_10px_20px_rgba(227,183,85,0.2)]"
                   >
                     {loading ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin text-[#030303]" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#1C1C1C]" />
                     ) : (
-                      isRegister ? "Create Node" : "Authenticate"
+                      isRegister ? "Sign Up" : "Log In"
                     )}
                   </button>
                 </div>
               </form>
 
-              <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center justify-center text-xs">
-                <span className="text-slate-500 mb-2 font-medium">
-                  {isRegister ? "Node already established?" : "Need network access?"}
+              <div className="mt-8 pt-6 border-t border-white/5 flex flex-col items-center justify-center text-sm font-medium">
+                <span className="text-slate-400 mb-2">
+                  {isRegister ? "Already have an account?" : "Don't have an account?"}
                 </span>
                 <button
                   type="button"
@@ -215,15 +187,14 @@ export default function LoginPage() {
                     setIsRegister(!isRegister);
                     setError("");
                   }}
-                  className="text-[#BF953F] hover:text-[#FCF6BA] transition-colors font-bold uppercase tracking-widest"
+                  className="text-[#E3B755] hover:brightness-110 transition-all font-bold"
                 >
-                  {isRegister ? "Authenticate Here" : "Create Node Here"}
+                  {isRegister ? "Log In" : "Sign Up"}
                 </button>
               </div>
             </div>
-          </motion.div>
-
-        </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

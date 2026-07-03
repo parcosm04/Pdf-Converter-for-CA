@@ -5,12 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { 
   Upload, FileText, CheckCircle2, AlertTriangle, Clock, 
-  Download, LogOut, User, Sparkles, Shield, BarChart3, Zap, Lock
+  Download, User, Check, ArrowRight
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { Playfair_Display } from "next/font/google";
-
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
 interface Job {
   id: string;
@@ -31,6 +28,12 @@ interface Stats {
   total_transactions: number;
   audit_pass_rate: number;
 }
+
+const SparkleStar = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 12 24C12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
+  </svg>
+);
 
 export default function DashboardPage() {
   const { user, token, loading: authLoading, logout } = useAuth();
@@ -139,9 +142,7 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`${API_URL}/jobs/upload`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -154,7 +155,7 @@ export default function DashboardPage() {
       setActiveJobId(jobData.id);
       setActiveJobStatus(jobData.file_status);
     } catch (err: any) {
-      setUploadError(err.message || "Failed to dispatch upload task.");
+      setUploadError(err.message || "Failed to process document.");
       setUploading(false);
     }
   };
@@ -165,276 +166,300 @@ export default function DashboardPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050505]">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-          <div className="w-16 h-16 rounded-full border-t-2 border-r-2 border-[#BF953F]" />
+      <div className="flex min-h-screen items-center justify-center bg-[#1E1E1E]">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
+          <div className="w-12 h-12 rounded-full border-t-2 border-r-2 border-[#E3B755]" />
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen bg-[#030303] text-white font-sans overflow-x-hidden selection:bg-[#BF953F]/30">
+    <div className="relative min-h-screen bg-[#252525] text-white font-sans overflow-x-hidden selection:bg-[#E3B755]/30">
       
-      {/* --- Ultra-Premium Background Effects --- */}
-      {/* Tech Grid Pattern */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] z-0" 
-           style={{ backgroundImage: 'linear-gradient(#BF953F 1px, transparent 1px), linear-gradient(90deg, #BF953F 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-      
-      {/* Deep Gold Glows */}
-      <div className="absolute top-[-10%] right-[-5%] w-[60vw] h-[60vw] bg-[#BF953F] opacity-[0.08] blur-[150px] rounded-full pointer-events-none z-0 mix-blend-screen" />
-      <div className="absolute bottom-[20%] left-[-10%] w-[50vw] h-[50vw] bg-[#AA771C] opacity-[0.05] blur-[120px] rounded-full pointer-events-none z-0 mix-blend-screen" />
-      
-      {/* Connecting Circuit Lines (Simulated with absolute divs) */}
-      <div className="absolute top-[35%] left-[20%] w-[1px] h-[30%] bg-gradient-to-b from-transparent via-[#BF953F]/20 to-transparent pointer-events-none z-0" />
-      <div className="absolute top-[45%] right-[25%] w-[1px] h-[40%] bg-gradient-to-b from-transparent via-[#BF953F]/20 to-transparent pointer-events-none z-0" />
+      {/* Super Smooth Dilocash Gradient Backgrounds */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-[10%] right-[-10%] w-[70vw] h-[70vw] bg-[#E3B755] opacity-[0.12] blur-[140px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[0%] left-[-20%] w-[50vw] h-[50vw] bg-[#E3B755] opacity-[0.06] blur-[120px] rounded-full mix-blend-screen" />
+      </div>
 
-      {/* Header */}
-      <header className="relative z-20 w-full pt-8 pb-4 border-b border-[#BF953F]/10 bg-gradient-to-b from-[#030303] to-transparent">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#BF953F] to-[#AA771C] flex items-center justify-center shadow-[0_0_15px_rgba(191,149,63,0.4)]">
-              <span className={`${playfair.className} font-bold text-[#030303] text-lg leading-none`}>F</span>
-            </div>
-            <span className={`${playfair.className} font-bold tracking-widest text-xl uppercase bg-gradient-to-r from-[#e6c875] via-[#fff3c7] to-[#e6c875] bg-clip-text text-transparent`}>
-              FinExtract
+      {/* Decorative Smooth Stars */}
+      <SparkleStar className="absolute top-[25%] left-[45%] w-5 h-5 text-[#E3B755] opacity-70 z-0 animate-pulse" />
+      <SparkleStar className="absolute top-[35%] right-[12%] w-4 h-4 text-[#E3B755] opacity-50 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
+      <SparkleStar className="absolute bottom-[30%] left-[25%] w-3 h-3 text-[#E3B755] opacity-40 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
+
+      {/* Header - Super Clean */}
+      <header className="relative z-20 w-full pt-10 pb-6">
+        <div className="max-w-[1400px] mx-auto px-8 md:px-16 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="font-bold tracking-tight text-2xl text-white">
+              Fin<span className="text-[#E3B755]">Extract</span>
             </span>
           </div>
           
-          <nav className="hidden lg:flex items-center space-x-10 text-xs font-semibold tracking-widest uppercase text-slate-400">
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Platform</a>
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Ecosystem</a>
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Technology</a>
+          <nav className="hidden lg:flex items-center space-x-10 text-sm font-medium text-slate-300">
+            <a href="#" className="hover:text-white transition-colors">Service</a>
+            <a href="#" className="hover:text-white transition-colors">How It Work</a>
+            <a href="#" className="hover:text-white transition-colors">Benefits</a>
           </nav>
 
           <div className="flex items-center space-x-6 text-sm font-medium">
-            <div className="hidden sm:flex items-center space-x-2 text-slate-400 mr-2">
-              <User className="h-4 w-4 text-[#BF953F]" />
-              <span className="text-xs uppercase tracking-wider">{user.email}</span>
+            <div className="hidden sm:flex items-center space-x-2 text-slate-300">
+              <User className="h-4 w-4" />
+              <span>{user.email}</span>
             </div>
             <button
               onClick={logout}
-              className="px-6 py-2 rounded border border-[#BF953F]/50 text-[#BF953F] text-xs font-bold uppercase tracking-widest hover:bg-[#BF953F] hover:text-[#030303] transition-all shadow-[0_0_15px_rgba(191,149,63,0.1)] hover:shadow-[0_0_20px_rgba(191,149,63,0.4)]"
+              className="px-6 py-2 rounded-full border border-[#E3B755] text-[#E3B755] hover:bg-[#E3B755] hover:text-[#252525] transition-all font-semibold"
             >
-              Disconnect
+              Log Out
             </button>
           </div>
         </div>
       </header>
 
-      <main className="relative z-10 w-full flex flex-col items-center pt-20 pb-32">
+      {/* Main Content Area */}
+      <main className="relative z-10 w-full max-w-[1400px] mx-auto px-8 md:px-16 py-12 lg:py-20 flex flex-col">
         
-        {/* Hero Section */}
-        <div className="text-center w-full max-w-5xl mx-auto px-6 mb-24 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className={`${playfair.className} text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.15] mb-8`}>
-              <span className="block text-white mb-2">FINEXTRACT NODE —</span>
-              <span className="block bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent">
-                DIGITAL LEDGER ON THE
-              </span>
-              <span className="block text-white font-light italic mt-2">FINANCIAL NETWORK</span>
-            </h1>
-          </motion.div>
+        {/* Split Hero Layout */}
+        <section className="w-full flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8 mb-24">
           
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto font-light leading-relaxed mb-10"
-          >
-            A reliable and stable asset parsing engine that ensures robust growth and protection of your transactional data through ultra-secure extraction protocols.
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <button 
-              onClick={() => document.getElementById('upload-input')?.click()}
-              className="px-10 py-4 bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#030303] text-sm font-bold uppercase tracking-widest rounded-sm shadow-[0_0_30px_rgba(191,149,63,0.3)] hover:shadow-[0_0_50px_rgba(191,149,63,0.5)] transition-all transform hover:-translate-y-1"
+          {/* Left Text & CTA */}
+          <div className="w-full lg:w-[50%] flex flex-col z-10">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-5xl sm:text-6xl lg:text-[72px] font-bold tracking-tight text-white leading-[1.05] mb-8"
             >
-              Initialize Node
-            </button>
-          </motion.div>
-        </div>
-
-        {/* Central Extraction Block (The "Vault") */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="w-full max-w-[600px] px-6 relative z-20 mb-32"
-        >
-          {/* Decorative Connecting Line Top */}
-          <div className="absolute -top-16 left-1/2 w-[1px] h-16 bg-gradient-to-b from-transparent to-[#BF953F]/50" />
-          <div className="absolute -top-16 left-1/2 -ml-1 w-2 h-2 rounded-full border border-[#BF953F] bg-[#030303]" />
-
-          <div className="rounded-2xl bg-[#080808]/80 backdrop-blur-xl border border-[#BF953F]/30 shadow-[inset_0_0_30px_rgba(191,149,63,0.05),_0_20px_50px_rgba(0,0,0,0.8)] p-1 relative overflow-hidden group">
+              Fast And Simple <br /> Data Extraction <br /> Solution
+            </motion.h1>
             
-            {/* Inner Metallic Border */}
-            <div className="absolute inset-0 rounded-2xl border-[0.5px] border-white/5 pointer-events-none" />
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-lg mb-10 font-normal"
+            >
+              Easily convert and extract unstructured financial statements into clean, actionable Excel data. Drop your file, and let the system handle the reconciliation instantly.
+            </motion.p>
             
-            <div className="bg-[#0B0B0B] rounded-xl p-10 lg:p-14 relative z-10 flex flex-col items-center text-center">
-              
-              {uploading ? (
-                <div className="py-8 flex flex-col items-center justify-center space-y-8 w-full">
-                  <div className="relative">
-                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: "linear" }} className="absolute inset-0 rounded-full border border-[#BF953F]/20" />
-                    <motion.div animate={{ rotate: -360 }} transition={{ duration: 4, repeat: Infinity, ease: "linear" }} className="w-24 h-24 rounded-full border-t-2 border-[#BF953F] shadow-[0_0_15px_rgba(191,149,63,0.5)]" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Lock className="w-6 h-6 text-[#BF953F]" />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <h4 className={`${playfair.className} text-2xl font-bold text-white tracking-wide`}>Decrypting Data</h4>
-                    <p className="text-xs text-[#BF953F] uppercase tracking-[0.2em] font-bold">{activeJobStatus}</p>
-                    
-                    {activeJobStatus === "completed" && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: 10 }} 
-                        animate={{ opacity: 1, y: 0 }} 
-                        className="mt-6 border border-emerald-500/30 bg-emerald-500/5 px-6 py-3 rounded text-emerald-400 text-xs font-bold uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.1)]"
-                      >
-                        Ledger compiled. Awaiting Excel download below.
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div 
-                  onClick={() => document.getElementById('upload-input')?.click()}
-                  className="w-full py-12 flex flex-col items-center justify-center cursor-pointer transition-all duration-500"
-                >
-                  <div className="relative mb-8 group-hover:scale-110 transition-transform duration-500">
-                    <div className="absolute inset-0 bg-[#BF953F] blur-xl opacity-20 rounded-full" />
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] border border-[#BF953F]/30 flex items-center justify-center shadow-[inset_0_0_20px_rgba(191,149,63,0.1)] relative z-10">
-                      <Upload className="w-10 h-10 text-[#BF953F]" />
-                    </div>
-                  </div>
-                  <h3 className={`${playfair.className} text-3xl font-bold text-white mb-3`}>Deploy PDF Document</h3>
-                  <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold">Max encrypted payload: 50MB</p>
-                  <input
-                    id="upload-input"
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                </div>
-              )}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-wrap items-center gap-4 mb-24"
+            >
+              <button 
+                onClick={() => document.getElementById('upload-input')?.click()}
+                className="px-8 py-3.5 bg-[#E3B755] text-[#252525] font-bold rounded-full hover:brightness-110 transition-all shadow-[0_10px_30px_rgba(227,183,85,0.3)] flex items-center"
+              >
+                Start Extraction
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </button>
+              <button 
+                onClick={scrollToTable}
+                className="px-8 py-3.5 border border-[#E3B755] text-[#E3B755] font-bold rounded-full hover:bg-[#E3B755]/10 transition-all"
+              >
+                View History
+              </button>
+            </motion.div>
 
-              {uploadError && (
-                <div className="mt-8 border border-rose-500/30 bg-rose-500/5 px-6 py-4 rounded text-rose-400 text-xs font-bold uppercase tracking-widest flex items-center space-x-3 w-full justify-center">
-                  <AlertTriangle className="w-4 h-4" />
-                  <span>{uploadError}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Features Section (Like the 4 gold icons in reference) */}
-        <div className="w-full max-w-[1200px] px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-32">
-          {[
-            { icon: <Shield className="w-8 h-8" />, title: "SECURE INVESTORS", desc: "Enterprise-grade security protocols for all parsed documentation." },
-            { icon: <BarChart3 className="w-8 h-8" />, title: "GLOBAL LEDGER", desc: "Standardized output mapping directly to your ERP systems." },
-            { icon: <Zap className="w-8 h-8" />, title: "RAPID ECOSYSTEM", desc: "Instantaneous processing utilizing deep learning extraction." },
-            { icon: <Lock className="w-8 h-8" />, title: "PRIVATE RETAIL", desc: "Complete data sovereignty with auto-purging architecture." },
-          ].map((feature, i) => (
-            <div key={i} className="flex flex-col items-center text-center">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#1A1A1A] to-[#050505] border border-[#BF953F]/30 flex items-center justify-center mb-6 text-[#BF953F] shadow-[0_10px_30px_rgba(191,149,63,0.15)] relative">
-                <div className="absolute inset-0 rounded-full shadow-[inset_0_0_15px_rgba(191,149,63,0.3)] pointer-events-none" />
-                {feature.icon}
+            {/* Bottom Left Minimal Stats */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-12"
+            >
+              <div className="flex flex-col max-w-[200px]">
+                <span className="text-[#E3B755] font-bold text-xl mb-1">01</span>
+                <span className="text-white font-semibold text-base mb-1">Financial Processing</span>
+                <span className="text-slate-400 text-xs leading-relaxed">Manage everything from this simple dashboard interface.</span>
               </div>
-              <h4 className={`${playfair.className} text-lg font-bold text-white mb-3 uppercase tracking-wider`}>{feature.title}</h4>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-[200px]">{feature.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Premium Ledger / Table */}
-        <div id="history-table" className="w-full max-w-[1200px] px-6">
-          <div className="text-center mb-16">
-            <h2 className={`${playfair.className} text-3xl md:text-4xl font-bold text-white mb-4`}>
-              <span className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] bg-clip-text text-transparent">GOLD RUSH</span> WITH FINEXTRACT
-            </h2>
-            <p className="text-slate-400 text-xs uppercase tracking-[0.2em]">The financial parsing journey begins here in our digital ledger.</p>
+              <div className="flex flex-col max-w-[200px]">
+                <span className="text-[#E3B755] font-bold text-xl mb-1">02</span>
+                <span className="text-white font-semibold text-base mb-1">Easy To Use System</span>
+                <span className="text-slate-400 text-xs leading-relaxed">Each upload delivers clean, balanced tabular records instantly.</span>
+              </div>
+            </motion.div>
           </div>
 
-          <div className="w-full bg-[#080808]/80 backdrop-blur-lg border border-[#BF953F]/20 rounded-xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          {/* Right Side: Super Smooth Extraction Card */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+            className="w-full lg:w-[50%] relative flex justify-center lg:justify-end items-center"
+          >
+            {/* Circular Text Badge */}
+            <div className="absolute -left-6 bottom-16 w-32 h-32 z-20 hidden md:flex items-center justify-center">
+              <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
+                <svg viewBox="0 0 100 100" className="w-full h-full text-[#E3B755] fill-current">
+                  <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
+                  <text className="text-[10px] font-bold uppercase tracking-widest">
+                    <textPath href="#circlePath">
+                      extraction solution your one stop • 
+                    </textPath>
+                  </text>
+                </svg>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-[#E3B755] flex items-center justify-center z-10 shadow-lg">
+                <Check className="w-5 h-5 text-[#252525]" />
+              </div>
+            </div>
+
+            {/* Active Users Block */}
+            <div className="absolute -bottom-4 right-8 z-20 flex items-center bg-[#1A1A1A]/80 backdrop-blur-md border border-[#E3B755]/30 rounded-full p-2 pr-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+              <div className="bg-[#E3B755] text-[#252525] font-bold text-lg px-4 py-1.5 rounded-full mr-3">
+                {stats?.total_jobs ? `${stats.total_jobs}K` : '1.24M'}
+              </div>
+              <div className="flex flex-col justify-center">
+                <span className="text-xs font-semibold text-slate-300 leading-tight">Documents</span>
+                <span className="text-[10px] text-slate-500">Processed</span>
+              </div>
+            </div>
+
+            {/* Main Dropzone Container */}
+            <div className="w-full max-w-[460px] rounded-[2rem] bg-gradient-to-br from-[#1E1E1E] to-[#151515] p-[2px] shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative z-10">
+              <div className="w-full h-full bg-[#1C1C1C] rounded-[2rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                
+                {uploading ? (
+                  <div className="py-12 flex flex-col items-center space-y-6">
+                    <div className="relative">
+                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
+                        <div className="w-16 h-16 rounded-full border-t-2 border-r-2 border-[#E3B755]" />
+                      </motion.div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xl font-bold text-white tracking-tight">Processing Data</h4>
+                      <p className="text-xs text-[#E3B755] font-bold uppercase tracking-widest">{activeJobStatus}</p>
+                      
+                      {activeJobStatus === "completed" && (
+                        <motion.p 
+                          initial={{ opacity: 0, y: 10 }} 
+                          animate={{ opacity: 1, y: 0 }} 
+                          className="text-emerald-400 text-sm font-semibold mt-6 bg-emerald-400/10 px-5 py-2.5 rounded-full"
+                        >
+                          Ready! Awaiting Excel download below.
+                        </motion.p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div 
+                    onClick={() => document.getElementById('upload-input')?.click()}
+                    className="py-12 w-full flex flex-col items-center justify-center cursor-pointer transition-all"
+                  >
+                    <div className="w-24 h-24 rounded-[1.5rem] bg-[#252525] shadow-inner flex items-center justify-center mb-6 group-hover:-translate-y-2 group-hover:shadow-[0_10px_30px_rgba(227,183,85,0.15)] transition-all duration-500">
+                      <Upload className="w-10 h-10 text-[#E3B755]" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Upload PDF Document</h3>
+                    <p className="text-sm text-slate-400 font-medium">Click to browse (Up to 50MB)</p>
+                    <input
+                      id="upload-input"
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                  </div>
+                )}
+
+                {uploadError && (
+                  <div className="mt-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-5 py-3 rounded-2xl text-sm font-medium flex items-center space-x-2">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </section>
+
+        {/* Super Clean Smooth Table Section */}
+        <section id="history-table" className="w-full mt-10 z-10 pt-16">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 px-2">
+            <div>
+              <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Recent Extractions</h2>
+              <p className="text-slate-400 text-sm font-medium">Track your processed files and download the output.</p>
+            </div>
+          </div>
+
+          <div className="w-full rounded-3xl bg-[#1C1C1C] shadow-[0_20px_40px_rgba(0,0,0,0.4)] overflow-hidden">
             {loading ? (
-              <div className="py-24 flex flex-col items-center justify-center text-[#BF953F]">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }} className="w-10 h-10 rounded-full border-t-2 border-r-2 border-[#BF953F] mb-4" />
-                <span className="text-xs uppercase tracking-widest font-bold">Syncing Ledger...</span>
+              <div className="py-24 flex flex-col items-center justify-center text-slate-400">
+                <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-[#E3B755] animate-spin mb-4" />
+                <span className="font-medium text-sm">Loading records...</span>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="py-24 text-center text-slate-500 flex flex-col items-center">
-                <FileText className="w-12 h-12 mb-4 opacity-50" />
-                <p className="text-xs uppercase tracking-widest">No entries found in the ledger.</p>
+              <div className="py-24 text-center text-slate-400 flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-[#252525] flex items-center justify-center mb-4">
+                  <FileText className="w-6 h-6 text-slate-600" />
+                </div>
+                <p className="font-medium">No documents processed yet. Upload to begin.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left whitespace-nowrap">
                   <thead>
-                    <tr className="border-b border-[#BF953F]/20 bg-[#0A0A0A]">
-                      <th className="py-6 pl-8 pr-4 text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Source Node</th>
-                      <th className="py-6 px-4 text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Status</th>
-                      <th className="py-6 px-4 text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Txn Block</th>
-                      <th className="py-6 px-4 text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Validation</th>
-                      <th className="py-6 px-4 text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Timestamp</th>
-                      <th className="py-6 pr-8 pl-4 text-right text-[10px] font-bold uppercase tracking-[0.15em] text-[#BF953F]">Export</th>
+                    <tr className="border-b border-white/5 bg-[#181818]">
+                      <th className="py-5 pl-10 pr-4 text-xs font-bold uppercase tracking-wider text-slate-500">Document Name</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Transactions</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Validation</th>
+                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-500">Date</th>
+                      <th className="py-5 pr-10 pl-4 text-right text-xs font-bold uppercase tracking-wider text-slate-500">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {jobs.map((job) => (
-                      <tr key={job.id} className="hover:bg-[#111] transition-colors group">
-                        <td className="py-5 pl-8 pr-4">
+                      <tr key={job.id} className="hover:bg-[#202020] transition-colors group">
+                        <td className="py-6 pl-10 pr-4">
                           <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded bg-[#111] border border-[#BF953F]/30 flex items-center justify-center">
-                              <FileText className="w-4 h-4 text-slate-400" />
+                            <div className="w-10 h-10 rounded-xl bg-[#252525] flex items-center justify-center">
+                              <FileText className="w-4 h-4 text-[#E3B755]" />
                             </div>
-                            <span className="font-semibold text-slate-200 text-sm truncate max-w-[200px]">{job.original_filename}</span>
+                            <span className="font-semibold text-white truncate max-w-[200px]">{job.original_filename}</span>
                           </div>
                         </td>
-                        <td className="py-5 px-4">
-                          <div className="flex items-center space-x-2">
-                            {job.file_status === "completed" && <div className="w-1.5 h-1.5 rounded-full bg-[#BF953F] shadow-[0_0_8px_#BF953F]" />}
-                            {job.file_status === "failed" && <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]" />}
-                            {job.file_status !== "completed" && job.file_status !== "failed" && <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse" />}
-                            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-300">{job.file_status}</span>
-                          </div>
+                        <td className="py-6 px-4">
+                          <span className={`inline-flex items-center space-x-2 text-sm font-semibold ${
+                            job.file_status === "completed" ? "text-[#E3B755]" :
+                            job.file_status === "failed" ? "text-rose-400" :
+                            "text-slate-400"
+                          }`}>
+                            {job.file_status === "completed" && <CheckCircle2 className="w-4 h-4" />}
+                            {job.file_status === "failed" && <AlertTriangle className="w-4 h-4" />}
+                            {job.file_status !== "completed" && job.file_status !== "failed" && <Clock className="w-4 h-4 animate-spin" />}
+                            <span className="capitalize">{job.file_status}</span>
+                          </span>
                         </td>
-                        <td className="py-5 px-4 font-mono text-slate-300 text-xs">{job.txn_count > 0 ? job.txn_count : "---"}</td>
-                        <td className="py-5 px-4">
+                        <td className="py-6 px-4 font-semibold text-slate-300">{job.txn_count > 0 ? job.txn_count : "---"}</td>
+                        <td className="py-6 px-4">
                           {job.file_status === "completed" ? (
-                            <span className={`text-[11px] font-bold uppercase tracking-widest ${job.audit_passed ? "text-emerald-400" : "text-rose-400"}`}>
-                              {job.audit_passed ? "Valid Hash" : "Hash Mismatch"}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              <div className={`w-2 h-2 rounded-full ${job.audit_passed ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.5)]"}`} />
+                              <span className="text-sm font-semibold text-slate-300">{job.audit_passed ? "Valid" : "Mismatch"}</span>
+                            </div>
                           ) : (
-                            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Pending</span>
+                            <span className="text-slate-500 text-sm font-medium">Pending</span>
                           )}
                         </td>
-                        <td className="py-5 px-4 text-xs font-mono text-slate-400">
-                          {new Date(job.created_at).toLocaleDateString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit' })}
+                        <td className="py-6 px-4 text-sm font-medium text-slate-400">
+                          {new Date(job.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                         </td>
-                        <td className="py-5 pr-8 pl-4 text-right">
+                        <td className="py-6 pr-10 pl-4 text-right">
                           {job.file_status === "completed" ? (
                             <a
                               href={`${API_URL}/jobs/${job.id}/download?token=${token}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center px-6 py-2 rounded-sm bg-gradient-to-r from-[#BF953F] to-[#AA771C] text-[#030303] font-bold text-[10px] uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(191,149,63,0.2)]"
+                              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#E3B755] text-[#1C1C1C] font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_5px_15px_rgba(227,183,85,0.2)]"
                             >
                               Download CSV
                             </a>
                           ) : (
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">Processing</span>
+                            <span className="text-slate-600 text-sm font-medium">Processing...</span>
                           )}
                         </td>
                       </tr>
@@ -444,25 +469,8 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-        </div>
-
+        </section>
       </main>
-
-      <footer className="w-full border-t border-[#BF953F]/10 relative z-10 bg-[#030303]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-10 flex flex-col md:flex-row items-center justify-between">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <span className={`${playfair.className} font-bold text-[#BF953F] text-lg`}>FinExtract</span>
-            <span className="text-slate-600 text-[10px] uppercase tracking-widest">© {new Date().getFullYear()}</span>
-          </div>
-          <div className="flex items-center space-x-8 text-[10px] uppercase tracking-widest font-bold text-slate-500">
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Privacy</a>
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Terms</a>
-            <a href="#" className="hover:text-[#BF953F] transition-colors">Audit Report</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
-/ /   T r i g g e r   V e r c e l   B u i l d  
- 
