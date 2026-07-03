@@ -77,22 +77,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen bg-[#252525] text-white font-sans overflow-hidden selection:bg-[#E3B755]/30">
+    <div className="relative flex min-h-screen text-white font-sans overflow-hidden selection:bg-[#DCA846]/30 bg-[#121212]">
       
-      {/* Super Smooth Glows */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 flex items-center justify-center">
-        <div className="w-[80vw] h-[80vw] bg-[#E3B755] opacity-[0.08] blur-[150px] rounded-full mix-blend-screen" />
-      </div>
+      {/* RICH DILOCASH BACKGROUND GRADIENT */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_50%,_#3A2E1C_0%,_#18181A_50%,_#121212_100%)]" />
 
-      <SparkleStar className="absolute top-[20%] left-[25%] w-5 h-5 text-[#E3B755] opacity-70 z-0 animate-pulse" />
-      <SparkleStar className="absolute top-[70%] right-[25%] w-4 h-4 text-[#E3B755] opacity-50 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
+      {/* Extra floating glow behind form */}
+      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.12] blur-[120px] rounded-full pointer-events-none z-0" />
+
+      <SparkleStar className="absolute top-[20%] left-[25%] w-6 h-6 text-[#DCA846] opacity-90 z-0 animate-pulse" />
+      <SparkleStar className="absolute top-[70%] right-[25%] w-4 h-4 text-[#DCA846] opacity-70 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
 
       <div className="relative z-10 w-full flex flex-col lg:flex-row items-center justify-center min-h-screen px-6 py-12">
         
         {/* Left Side: Branding */}
         <div className="hidden lg:flex flex-col justify-center w-1/2 pr-16 max-w-xl">
           <span className="font-bold tracking-tight text-3xl text-white mb-8">
-            Fin<span className="text-[#E3B755]">Extract</span>
+            Fin<span className="text-[#DCA846]">Extract</span>
           </span>
           <h1 className="text-5xl lg:text-6xl font-bold tracking-tight text-white leading-[1.1] mb-6">
             Secure & Smart <br /> Access Portal
@@ -109,11 +110,11 @@ export default function LoginPage() {
           transition={{ duration: 0.6 }}
           className="w-full max-w-[440px] lg:w-1/2"
         >
-          <div className="rounded-[2rem] bg-gradient-to-br from-[#1E1E1E] to-[#151515] p-[2px] shadow-[0_20px_50px_rgba(0,0,0,0.6)] relative">
-            <div className="bg-[#1C1C1C] rounded-[2rem] p-10 relative z-10">
+          <div className="rounded-[2rem] bg-gradient-to-br from-[#252525] to-[#151515] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.8)] relative">
+            <div className="bg-[#18181A] rounded-[2rem] p-10 relative z-10 border border-white/5">
               
               <div className="lg:hidden font-bold tracking-tight text-2xl text-white mb-8 text-center">
-                Fin<span className="text-[#E3B755]">Extract</span>
+                Fin<span className="text-[#DCA846]">Extract</span>
               </div>
 
               <div className="mb-8">
@@ -144,7 +145,7 @@ export default function LoginPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="block w-full rounded-2xl border-none bg-[#252525] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#E3B755]/50 outline-none transition-shadow"
+                      className="block w-full rounded-2xl border border-white/5 bg-[#222222] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
                       placeholder="name@company.com"
                     />
                   </div>
@@ -156,7 +157,7 @@ export default function LoginPage() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="block w-full rounded-2xl border-none bg-[#252525] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#E3B755]/50 outline-none transition-shadow"
+                      className="block w-full rounded-2xl border border-white/5 bg-[#222222] px-5 py-4 text-sm text-white placeholder-slate-500 focus:ring-2 focus:ring-[#DCA846]/50 outline-none transition-shadow"
                       placeholder="••••••••"
                     />
                   </div>
@@ -166,10 +167,10 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center rounded-full bg-[#E3B755] px-4 py-4 text-sm font-bold text-[#1C1C1C] hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_10px_20px_rgba(227,183,85,0.2)]"
+                    className="w-full flex items-center justify-center rounded-full bg-[#DCA846] px-4 py-4 text-sm font-bold text-[#121212] hover:brightness-110 transition-all focus:outline-none disabled:opacity-70 shadow-[0_10px_20px_rgba(220,168,70,0.2)]"
                   >
                     {loading ? (
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#1C1C1C]" />
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#121212]" />
                     ) : (
                       isRegister ? "Sign Up" : "Log In"
                     )}
@@ -187,7 +188,7 @@ export default function LoginPage() {
                     setIsRegister(!isRegister);
                     setError("");
                   }}
-                  className="text-[#E3B755] hover:brightness-110 transition-all font-bold"
+                  className="text-[#DCA846] hover:brightness-110 transition-all font-bold"
                 >
                   {isRegister ? "Log In" : "Sign Up"}
                 </button>
