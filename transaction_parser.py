@@ -9,6 +9,61 @@ from config import config
 from models import Transaction, ExceptionRecord
 from utils import parse_date, parse_amount, sanitize_text
 
+def resolve_amount_and_type(row: Dict[str, str]) -> Tuple[Optional[Decimal], Optional[Decimal]]:
+    """
+    Given a row, attempts to extract and split debit and credit values.
+    Supports:
+      1. Explicit 'debit' and 'credit' columns.
+      2. Single 'amount' column combined with a 'type' (Dr/Cr) column.
+      3. Single 'amount' column with signs/indicators in the value itself.
+    """
+    deb_val = parse_amount(row.get("debit"))
+    crd_val = parse_amount(row.get("credit"))
+    
+    # If explicit columns are found, return them
+    if deb_val is not None or crd_val is not None:
+        return deb_val, crd_val
+        
+    # Check for single amount column
+    amt_str = row.get("amount")
+    if not amt_str:
+        return None, None
+        
+    amt_val = parse_amount(amt_str)
+    if amt_val is None:
+        return None, None
+        
+    # Check type/indicator column if present
+    txn_type = row.get("type", "").strip().lower()
+    raw_amt_lower = amt_str.lower()
+    
+    is_debit = False
+    is_credit = False
+    
+    if txn_type:
+        if any(x in txn_type for x in ["dr", "debit", "withdrawal", "payment"]):
+            is_debit = True
+        elif any(x in txn_type for x in ["cr", "credit", "deposit", "receipt"]):
+            is_credit = True
+            
+    if not is_debit and not is_credit:
+        # Look for indicators in amount string itself
+        if "dr" in raw_amt_lower or "-" in raw_amt_lower or "(" in raw_amt_lower:
+            is_debit = True
+        elif "cr" in raw_amt_lower or "+" in raw_amt_lower:
+            is_credit = True
+        else:
+            # Default to positive = credit, negative = debit
+            if amt_val < 0:
+                is_debit = True
+            else:
+                is_credit = True
+                
+    if is_debit:
+        return abs(amt_val), None
+    else:
+        return None, abs(amt_val)
+
 def parse_transactions_stream(
     pages_rows: List[Tuple[int, List[Dict[str, str]]]]
 ) -> Tuple[List[Transaction], List[ExceptionRecord]]:
@@ -68,8 +123,7 @@ def parse_transactions_stream(
                 val_date_str = row.get("value_date", "").strip()
                 parsed_val_date = parse_date(val_date_str) if val_date_str else parsed_date
                 
-                deb_val = parse_amount(row.get("debit"))
-                crd_val = parse_amount(row.get("credit"))
+                deb_val, crd_val = resolve_amount_and_type(row)
                 bal_val = parse_amount(row.get("closing_balance"))
                 
                 pending_txn = {
@@ -95,11 +149,17 @@ def parse_transactions_stream(
                     if not pending_txn.get("reference_number") and row.get("reference_number"):
                         pending_txn["reference_number"] = row.get("reference_number")
                         
-                    if pending_txn.get("debit") is None and row.get("debit"):
-                        pending_txn["debit"] = parse_amount(row.get("debit"))
-                        
-                    if pending_txn.get("credit") is None and row.get("credit"):
-                        pending_txn["credit"] = parse_amount(row.get("credit"))
+                    if pending_txn.get("debit") is None and pending_txn.get("credit") is None:
+                        deb_val, crd_val = resolve_amount_and_type(row)
+                        if deb_val is not None or crd_val is not None:
+                            pending_txn["debit"] = deb_val
+                            pending_txn["credit"] = crd_val
+                    else:
+                        if pending_txn.get("debit") is None and row.get("debit"):
+                            pending_txn["debit"] = parse_amount(row.get("debit"))
+                            
+                        if pending_txn.get("credit") is None and row.get("credit"):
+                            pending_txn["credit"] = parse_amount(row.get("credit"))
                         
                     if pending_txn.get("closing_balance") == Decimal("0") and row.get("closing_balance"):
                         pending_txn["closing_balance"] = parse_amount(row.get("closing_balance"))

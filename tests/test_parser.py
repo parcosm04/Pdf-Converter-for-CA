@@ -69,3 +69,82 @@ def test_parse_transactions_stream():
     assert txns[1].debit == Decimal("100.00")
     assert txns[1].closing_balance == Decimal("900.00")
     assert txns[1].page == 2
+
+def test_parse_single_amount_and_type_column():
+    pages_rows = [
+        (1, [
+            {
+                "date": "01/01/2026",
+                "narration": "ATM WITHDRAWAL",
+                "amount": "200.00",
+                "type": "Dr",
+                "closing_balance": "800.00"
+            },
+            {
+                "date": "02/01/2026",
+                "narration": "SALARY CREDIT",
+                "amount": "1500.00",
+                "type": "Cr",
+                "closing_balance": "2300.00"
+            },
+            {
+                "date": "03/01/2026",
+                "narration": "ONLINE SHOPPING",
+                "amount": "-50.00",
+                "type": "",
+                "closing_balance": "2250.00"
+            },
+            {
+                "date": "04/01/2026",
+                "narration": "INTEREST",
+                "amount": "5.50+",
+                "type": "",
+                "closing_balance": "2255.50"
+            }
+        ])
+    ]
+    txns, exceptions = parse_transactions_stream(pages_rows)
+    assert len(exceptions) == 0
+    assert len(txns) == 4
+    
+    assert txns[0].debit == Decimal("200.00")
+    assert txns[0].credit is None
+    
+    assert txns[1].credit == Decimal("1500.00")
+    assert txns[1].debit is None
+    
+    assert txns[2].debit == Decimal("50.00")
+    assert txns[2].credit is None
+    
+    assert txns[3].credit == Decimal("5.50")
+    assert txns[3].debit is None
+
+def test_parse_alphabetic_month_dates():
+    pages_rows = [
+        (1, [
+            {
+                "date": "1-Jun-2026",
+                "narration": "TEST 1",
+                "debit": "10.00",
+                "closing_balance": "100.00"
+            },
+            {
+                "date": "Jun 02, 2026",
+                "narration": "TEST 2",
+                "credit": "20.00",
+                "closing_balance": "120.00"
+            },
+            {
+                "date": "03 Jun 26",
+                "narration": "TEST 3",
+                "credit": "30.00",
+                "closing_balance": "150.00"
+            }
+        ])
+    ]
+    txns, exceptions = parse_transactions_stream(pages_rows)
+    assert len(exceptions) == 0
+    assert len(txns) == 3
+    assert txns[0].date == date(2026, 6, 1)
+    assert txns[1].date == date(2026, 6, 2)
+    assert txns[2].date == date(2026, 6, 3)
