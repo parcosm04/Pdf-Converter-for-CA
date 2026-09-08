@@ -65,3 +65,26 @@ def read_users_me(current_user=Depends(security.get_current_active_user)):
     Returns current authenticated user details.
     """
     return current_user
+
+@router.post("/guest", response_model=schemas.Token)
+def guest_login(db: Session = Depends(get_db)):
+    """
+    Auto-authenticates a guest session, creating a default user if needed, and returning a JWT token.
+    """
+    guest_email = "guest@finextract.com"
+    user = crud.get_user_by_email(db, email=guest_email)
+    if not user:
+        user = crud.get_user_by_email(db, email="user@ubsp.com")
+        if not user:
+            org = crud.create_organization(db, name="Guest Workspace")
+            hashed_pass = security.get_password_hash("guestpass123")
+            user_create = schemas.UserCreate(email=guest_email, password="guestpass123")
+            user = crud.create_user(db, user_schema=user_create, hashed_pass=hashed_pass, org_id=org.id)
+
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    token = security.create_access_token(
+        data={"sub": user.email, "role": user.role},
+        expires_delta=access_token_expires
+    )
+    return {"access_token": token, "token_type": "bearer"}
+

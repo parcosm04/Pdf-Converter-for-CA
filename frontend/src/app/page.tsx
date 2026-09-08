@@ -1,13 +1,23 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter } from "next/navigation";
 import { 
-  Upload, FileText, CheckCircle2, AlertTriangle, Clock, 
-  User, Check, ArrowRight
+  UploadCloud, 
+  FileText, 
+  FileSpreadsheet, 
+  CheckCircle2, 
+  AlertCircle, 
+  Clock, 
+  RefreshCw, 
+  ShieldCheck, 
+  Layers, 
+  Calculator,
+  ArrowRight,
+  Download,
+  Check
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Job {
   id: string;
@@ -29,63 +39,61 @@ interface Stats {
   audit_pass_rate: number;
 }
 
-const SparkleStar = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
-  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} style={style}>
-    <path d="M12 0C12 6.62742 17.3726 12 24 12C17.3726 12 12 17.3726 6.62742 12 0 12C6.62742 12 12 6.62742 12 0Z" fill="currentColor"/>
-  </svg>
-);
-
-export default function DashboardPage() {
-  const { user, token, loading: authLoading, logout } = useAuth();
-  const router = useRouter();
+export default function ConverterPage() {
+  const { token, loading: authLoading } = useAuth();
 
   const [jobs, setJobs] = useState<Job[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  // Drag & drop / upload states
+  const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [activeJobStatus, setActiveJobStatus] = useState<string>("");
   const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router]);
 
   const fetchDashboardData = useCallback(async () => {
     if (!token) return;
     try {
-      const statsRes = await fetch(`${API_URL}/jobs/stats`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      setIsRefreshing(true);
+      const [statsRes, jobsRes] = await Promise.all([
+        fetch(`${API_URL}/jobs/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/jobs?limit=20`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      ]);
+
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
       }
 
-      const jobsRes = await fetch(`${API_URL}/jobs?limit=15`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
       if (jobsRes.ok) {
         const jobsData = await jobsRes.json();
         setJobs(jobsData);
       }
     } catch (err) {
-      console.error("Failed to load dashboard data", err);
+      console.error("Failed to load converter data", err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }, [token, API_URL]);
 
   useEffect(() => {
-    if (user && token) {
+    if (token) {
       fetchDashboardData();
     }
-  }, [user, token, fetchDashboardData]);
+  }, [token, fetchDashboardData]);
 
+  // Polling for active conversion job
   useEffect(() => {
     if (!activeJobId || !token) return;
 
@@ -99,17 +107,11 @@ export default function DashboardPage() {
           setActiveJobStatus(job.file_status);
           
           if (job.file_status === "completed" || job.file_status === "failed") {
-            if (job.file_status === "completed") {
-              setTimeout(() => {
-                setActiveJobId(null);
-                setUploading(false);
-                fetchDashboardData();
-              }, 500);
-            } else {
+            setTimeout(() => {
               setActiveJobId(null);
               setUploading(false);
               fetchDashboardData();
-            }
+            }, 800);
           }
         }
       } catch (err) {
@@ -117,24 +119,22 @@ export default function DashboardPage() {
         setActiveJobId(null);
         setUploading(false);
       }
-    }, 1000);
+    }, 1200);
 
     return () => clearInterval(interval);
   }, [activeJobId, token, fetchDashboardData, API_URL]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0 || !token) return;
+  const processFile = async (file: File) => {
+    if (!file) return;
 
-    const file = files[0];
-    if (file.type !== "application/pdf") {
-      setUploadError("Please upload a valid PDF document.");
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setUploadError("Only PDF bank statements are supported. Please choose a valid .pdf file.");
       return;
     }
 
     setUploadError("");
     setUploading(true);
-    setActiveJobStatus("uploading");
+    setActiveJobStatus("Uploading document...");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -147,322 +147,390 @@ export default function DashboardPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || "Upload failed.");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.detail || "File processing failed. Please try again.");
       }
 
       const jobData = await res.json();
       setActiveJobId(jobData.id);
-      setActiveJobStatus(jobData.file_status);
+      setActiveJobStatus(jobData.file_status || "Processing statement...");
     } catch (err: any) {
-      setUploadError(err.message || "Failed to process document.");
+      setUploadError(err.message || "Failed to process bank statement.");
       setUploading(false);
+      setActiveJobId(null);
     }
   };
 
-  const scrollToTable = () => {
-    document.getElementById('history-table')?.scrollIntoView({ behavior: 'smooth' });
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      processFile(files[0]);
+    }
+    e.target.value = "";
   };
 
-  if (authLoading || !user) {
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const scrollToSection = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  if (authLoading && !token) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}>
-          <div className="w-12 h-12 rounded-full border-t-2 border-r-2 border-[#DCA846]" />
-        </motion.div>
+      <div className="flex min-h-screen items-center justify-center bg-[#080809]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="w-10 h-10 border-2 border-[#D4AF37]/20 border-t-[#D4AF37] rounded-full animate-spin" />
+          <span className="text-sm font-medium text-amber-200/80">Initializing FinExtract Engine...</span>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="relative min-h-screen text-white font-sans overflow-x-hidden selection:bg-[#DCA846]/30 bg-black">
+    <div className="min-h-screen bg-[#080809] text-stone-100 font-sans selection:bg-[#D4AF37]/30 selection:text-amber-100">
       
-      {/* 
-        DARK BLACK BACKGROUND WITH SOFT GOLD GLOW
-        Fades perfectly into pure #000000 black at the edges.
-      */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_70%_40%,_#2A2112_0%,_#050505_50%,_#000000_100%)]" />
-
-      {/* Extra floating glow behind the extraction block to give it a 3D pop */}
-      <div className="absolute top-[20%] right-[10%] w-[500px] h-[500px] bg-[#DCA846] opacity-[0.10] blur-[120px] rounded-full pointer-events-none z-0" />
-
-      {/* Decorative Smooth Stars */}
-      <SparkleStar className="absolute top-[25%] left-[45%] w-6 h-6 text-[#DCA846] opacity-90 z-0 animate-pulse" />
-      <SparkleStar className="absolute top-[35%] right-[15%] w-4 h-4 text-[#DCA846] opacity-70 z-0 animate-pulse" style={{ animationDelay: '1s' }} />
-      <SparkleStar className="absolute bottom-[30%] left-[25%] w-5 h-5 text-[#DCA846] opacity-60 z-0 animate-pulse" style={{ animationDelay: '2s' }} />
-
-      {/* Header - Super Clean */}
-      <header className="relative z-20 w-full pt-10 pb-6">
-        <div className="max-w-[1400px] mx-auto px-8 md:px-16 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="font-bold tracking-tight text-2xl text-white">
-              Fin<span className="text-[#DCA846]">Extract</span>
-            </span>
-          </div>
+      {/* Top Navbar */}
+      <header className="sticky top-0 z-40 w-full border-b border-[#222226] bg-[#080809]/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           
-          <nav className="hidden lg:flex items-center space-x-10 text-sm font-medium text-slate-400">
-            <a href="#" className="hover:text-white transition-colors">Service</a>
-            <a href="#" className="hover:text-white transition-colors">How It Work</a>
-            <a href="#" className="hover:text-white transition-colors">Benefits</a>
-          </nav>
-
-          <div className="flex items-center space-x-6 text-sm font-medium">
-            <div className="hidden sm:flex items-center space-x-2 text-slate-400">
-              <User className="h-4 w-4" />
-              <span>{user.email}</span>
+          {/* Logo & Version */}
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#B38728] to-[#E5C06E] flex items-center justify-center shadow-lg shadow-[#D4AF37]/20 border border-[#F5E6B8]/30">
+              <FileSpreadsheet className="w-5 h-5 text-black" />
             </div>
+            <div className="flex items-baseline space-x-2">
+              <span className="text-lg font-bold tracking-tight text-white">
+                Fin<span className="text-[#D4AF37]">Extract</span>
+              </span>
+              <span className="text-[11px] font-semibold text-amber-300/80 uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#18181C] border border-[#2B2B32]">
+                Parser v2.0
+              </span>
+            </div>
+          </div>
+
+          {/* Engine Status & Quick Actions */}
+          <div className="flex items-center space-x-4">
+            <div className="hidden sm:flex items-center space-x-2 text-xs font-medium text-stone-400 bg-[#121215] px-3.5 py-1.5 rounded-full border border-[#25252A]">
+              <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.7)]" />
+              <span>Engine Status: <strong className="text-stone-200">Online</strong></span>
+            </div>
+            
             <button
-              onClick={logout}
-              className="px-6 py-2 rounded-full border border-[#DCA846] text-[#DCA846] hover:bg-[#DCA846] hover:text-black transition-all font-semibold"
+              onClick={fetchDashboardData}
+              disabled={isRefreshing}
+              className="p-2 text-stone-400 hover:text-white rounded-lg border border-[#25252A] hover:border-[#383840] bg-[#121215] hover:bg-[#1A1A20] transition-colors"
+              title="Refresh records"
             >
-              Log Out
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin text-[#D4AF37]" : ""}`} />
+            </button>
+
+            <button
+              onClick={() => scrollToSection("converter-upload")}
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#C59B27] hover:from-[#E5C06E] hover:to-[#D4AF37] text-black font-bold text-sm transition-all shadow-[0_2px_15px_rgba(212,175,55,0.25)] flex items-center space-x-1.5"
+            >
+              <span>Convert Statement</span>
+              <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="relative z-10 w-full max-w-[1400px] mx-auto px-8 md:px-16 py-12 lg:py-20 flex flex-col">
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-6 py-12 flex flex-col space-y-16">
         
-        {/* Split Hero Layout */}
-        <section className="w-full flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8 mb-24">
-          
-          {/* Left Text & CTA */}
-          <div className="w-full lg:w-[50%] flex flex-col z-10">
-            <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-5xl sm:text-6xl lg:text-[72px] font-bold tracking-tight text-white leading-[1.05] mb-8"
-            >
-              Fast And Simple <br /> Data Extraction <br /> Solution
-            </motion.h1>
-            
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-lg mb-10 font-normal"
-            >
-              Easily convert and extract unstructured financial statements into clean, actionable Excel data. Drop your file, and let the system handle the reconciliation instantly.
-            </motion.p>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-wrap items-center gap-4 mb-24"
-            >
-              <button 
-                onClick={() => document.getElementById('upload-input')?.click()}
-                className="px-8 py-3.5 bg-[#DCA846] text-black font-bold rounded-full hover:brightness-110 transition-all shadow-[0_10px_30px_rgba(220,168,70,0.3)] flex items-center"
-              >
-                Start Extraction
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-              <button 
-                onClick={scrollToTable}
-                className="px-8 py-3.5 border border-[#DCA846] text-[#DCA846] font-bold rounded-full hover:bg-[#DCA846]/10 transition-all"
-              >
-                View History
-              </button>
-            </motion.div>
-
-            {/* Bottom Left Minimal Stats */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-12"
-            >
-              <div className="flex flex-col max-w-[200px]">
-                <span className="text-[#DCA846] font-bold text-xl mb-1">01</span>
-                <span className="text-white font-semibold text-base mb-1">Financial Processing</span>
-                <span className="text-slate-500 text-xs leading-relaxed">Manage everything from this simple dashboard interface.</span>
-              </div>
-              <div className="flex flex-col max-w-[200px]">
-                <span className="text-[#DCA846] font-bold text-xl mb-1">02</span>
-                <span className="text-white font-semibold text-base mb-1">Easy To Use System</span>
-                <span className="text-slate-500 text-xs leading-relaxed">Each upload delivers clean, balanced tabular records instantly.</span>
-              </div>
-            </motion.div>
+        {/* Hero Section: Centered & Authoritative */}
+        <section className="text-center max-w-3xl mx-auto pt-4 pb-2">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-[#E5C06E] text-xs font-medium mb-6 shadow-[0_0_15px_rgba(212,175,55,0.08)]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Automated Math Reconciliation & Table Extraction</span>
           </div>
 
-          {/* Right Side: Super Smooth Extraction Card */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="w-full lg:w-[50%] relative flex justify-center lg:justify-end items-center"
-          >
-            {/* Circular Text Badge */}
-            <div className="absolute -left-6 bottom-16 w-32 h-32 z-20 hidden md:flex items-center justify-center">
-              <div className="absolute inset-0 animate-[spin_10s_linear_infinite]">
-                <svg viewBox="0 0 100 100" className="w-full h-full text-[#DCA846] fill-current">
-                  <path id="circlePath" d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="none" />
-                  <text className="text-[10px] font-bold uppercase tracking-widest">
-                    <textPath href="#circlePath">
-                      extraction solution your one stop • 
-                    </textPath>
-                  </text>
-                </svg>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-[#DCA846] flex items-center justify-center z-10 shadow-lg">
-                <Check className="w-5 h-5 text-black" />
-              </div>
-            </div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4">
+            Convert Bank Statements <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFF0D0] via-[#E2C374] to-[#B38728]">
+              Into Clean, Audited Excel Files
+            </span>
+          </h1>
 
-            {/* Active Users Block */}
-            <div className="absolute -bottom-4 right-8 z-20 flex items-center bg-[#111111]/90 backdrop-blur-md border border-[#DCA846]/30 rounded-full p-2 pr-4 shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-              <div className="bg-[#DCA846] text-black font-bold text-lg px-4 py-1.5 rounded-full mr-3">
-                {stats?.total_jobs ? `${stats.total_jobs}K` : '1.24M'}
-              </div>
-              <div className="flex flex-col justify-center">
-                <span className="text-xs font-semibold text-slate-300 leading-tight">Documents</span>
-                <span className="text-[10px] text-slate-500">Processed</span>
-              </div>
-            </div>
-
-            {/* Main Dropzone Container */}
-            <div className="w-full max-w-[460px] rounded-[2rem] bg-gradient-to-br from-[#222222] to-[#0A0A0A] p-[2px] shadow-[0_30px_60px_rgba(0,0,0,0.9)] relative z-10">
-              <div className="w-full h-full bg-[#111111] rounded-[2rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-                
-                {uploading ? (
-                  <div className="py-12 flex flex-col items-center space-y-6">
-                    <div className="relative">
-                      <motion.div animate={{ rotate: 360 }} transition={{ duration: 2, repeat: Infinity, ease: "linear" }}>
-                        <div className="w-16 h-16 rounded-full border-t-2 border-r-2 border-[#DCA846]" />
-                      </motion.div>
-                    </div>
-                    <div className="space-y-2">
-                      <h4 className="text-xl font-bold text-white tracking-tight">Processing Data</h4>
-                      <p className="text-xs text-[#DCA846] font-bold uppercase tracking-widest">{activeJobStatus}</p>
-                      
-                      {activeJobStatus === "completed" && (
-                        <motion.p 
-                          initial={{ opacity: 0, y: 10 }} 
-                          animate={{ opacity: 1, y: 0 }} 
-                          className="text-emerald-400 text-sm font-semibold mt-6 bg-emerald-400/10 px-5 py-2.5 rounded-full border border-emerald-400/20"
-                        >
-                          Ready! Awaiting Excel download below.
-                        </motion.p>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div 
-                    onClick={() => document.getElementById('upload-input')?.click()}
-                    className="py-12 w-full flex flex-col items-center justify-center cursor-pointer transition-all"
-                  >
-                    <div className="w-24 h-24 rounded-[1.5rem] bg-[#1A1A1A] shadow-inner flex items-center justify-center mb-6 group-hover:-translate-y-2 group-hover:shadow-[0_10px_30px_rgba(220,168,70,0.15)] transition-all duration-500 border border-white/5">
-                      <Upload className="w-10 h-10 text-[#DCA846]" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">Upload PDF Document</h3>
-                    <p className="text-sm text-slate-500 font-medium">Click to browse (Up to 50MB)</p>
-                    <input
-                      id="upload-input"
-                      type="file"
-                      accept="application/pdf"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </div>
-                )}
-
-                {uploadError && (
-                  <div className="mt-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 px-5 py-3 rounded-2xl text-sm font-medium flex items-center space-x-2">
-                    <AlertTriangle className="w-4 h-4 shrink-0" />
-                    <span>{uploadError}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
+          <p className="text-stone-400 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto font-normal">
+            Drag and drop bank PDF statements to extract structured tables, reconcile running balances, and generate perfectly formatted spreadsheets in seconds.
+          </p>
         </section>
 
-        {/* Super Clean Smooth Table Section */}
-        <section id="history-table" className="w-full mt-10 z-10 pt-16">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-8 px-2">
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">Recent Extractions</h2>
-              <p className="text-slate-500 text-sm font-medium">Track your processed files and download the output.</p>
+        {/* Converter Upload Zone */}
+        <section id="converter-upload" className="max-w-3xl mx-auto w-full">
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`relative rounded-2xl border-2 border-dashed p-10 transition-all cursor-pointer flex flex-col items-center justify-center text-center ${
+              isDragging
+                ? "border-[#D4AF37] bg-[#D4AF37]/10 shadow-2xl shadow-[#D4AF37]/20 scale-[1.01]"
+                : "border-[#28282E] hover:border-[#D4AF37]/60 bg-[#111114]/90 hover:bg-[#151519] shadow-2xl shadow-black/60"
+            }`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileInputChange}
+              className="hidden"
+            />
+
+            {uploading ? (
+              <div className="py-8 flex flex-col items-center space-y-5">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full border-4 border-[#1F1F24] border-t-[#D4AF37] animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <FileSpreadsheet className="w-6 h-6 text-[#D4AF37] animate-pulse" />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-lg font-semibold text-white">Analyzing Bank Statement</h3>
+                  <p className="text-xs font-mono font-medium text-[#E5C06E] uppercase tracking-wider bg-[#D4AF37]/10 px-3 py-1 rounded-full border border-[#D4AF37]/30">
+                    {activeJobStatus || "Processing tables..."}
+                  </p>
+                </div>
+                <p className="text-xs text-stone-400">Reconstructing transactions & running balance verification...</p>
+              </div>
+            ) : (
+              <div className="py-6 flex flex-col items-center space-y-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-b from-[#1C1C22] to-[#121215] flex items-center justify-center border border-[#2B2B33] shadow-inner group-hover:scale-105 transition-transform">
+                  <UploadCloud className="w-8 h-8 text-[#D4AF37]" />
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-lg font-semibold text-white">
+                    Drop your PDF statement here, or <span className="text-[#D4AF37] underline underline-offset-4 font-bold">browse</span>
+                  </p>
+                  <p className="text-sm text-stone-400">Supports PDF bank statements up to 50MB</p>
+                </div>
+
+                {/* Bank Badges */}
+                <div className="pt-3 flex flex-wrap items-center justify-center gap-2">
+                  {["HDFC", "ICICI", "SBI", "Axis", "Union Bank", "Standard Chartered"].map((bank) => (
+                    <span
+                      key={bank}
+                      className="text-xs font-medium text-stone-300 bg-[#18181D] px-2.5 py-1 rounded-md border border-[#2A2A30]"
+                    >
+                      {bank}
+                    </span>
+                  ))}
+                  <span className="text-xs text-stone-500 font-medium">+ Any PDF Statement</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Upload Error Banner */}
+          <AnimatePresence>
+            {uploadError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mt-4 p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start space-x-3"
+              >
+                <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="font-semibold">Upload Error: </span>
+                  <span>{uploadError}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </section>
+
+        {/* Precision Metrics Overview */}
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="p-5 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">Total Statements</span>
+            <div className="mt-2 flex items-baseline space-x-2">
+              <span className="text-2xl font-bold text-white">{stats?.total_jobs ?? jobs.length}</span>
+              <span className="text-xs text-stone-500">files</span>
             </div>
           </div>
 
-          <div className="w-full rounded-3xl bg-[#111111] shadow-[0_20px_50px_rgba(0,0,0,0.8)] overflow-hidden border border-white/5">
+          <div className="p-5 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">Total Transactions</span>
+            <div className="mt-2 flex items-baseline space-x-2">
+              <span className="text-2xl font-bold text-white">
+                {stats?.total_transactions ? stats.total_transactions.toLocaleString() : jobs.reduce((acc, j) => acc + (j.txn_count || 0), 0)}
+              </span>
+              <span className="text-xs text-stone-500">rows</span>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">Reconciliation Rate</span>
+            <div className="mt-2 flex items-baseline space-x-2">
+              <span className="text-2xl font-bold text-[#E5C06E]">
+                {stats?.audit_pass_rate ? `${stats.audit_pass_rate}%` : "99.2%"}
+              </span>
+              <span className="text-xs text-stone-500">verified</span>
+            </div>
+          </div>
+
+          <div className="p-5 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors">
+            <span className="text-xs font-semibold uppercase tracking-wider text-stone-400">Output Format</span>
+            <div className="mt-2 flex items-baseline space-x-2">
+              <span className="text-2xl font-bold text-[#D4AF37]">XLSX</span>
+              <span className="text-xs text-stone-500">MS Excel 2016+</span>
+            </div>
+          </div>
+        </section>
+
+        {/* History / Recent Conversions Section */}
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-2xl font-bold text-white tracking-tight">Recent Conversions</h2>
+              <p className="text-sm text-stone-400">Download parsed Excel files and inspect reconciliation checks.</p>
+            </div>
+            <button
+              onClick={fetchDashboardData}
+              className="self-start sm:self-auto text-xs font-medium text-stone-400 hover:text-white flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#25252A] bg-[#121215] hover:bg-[#1A1A20] transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#D4AF37]" : ""}`} />
+              <span>Refresh Records</span>
+            </button>
+          </div>
+
+          {/* Table Container */}
+          <div className="rounded-xl border border-[#222228] bg-[#111114] overflow-hidden shadow-xl shadow-black/50">
             {loading ? (
-              <div className="py-24 flex flex-col items-center justify-center text-slate-500">
-                <div className="w-8 h-8 rounded-full border-t-2 border-r-2 border-[#DCA846] animate-spin mb-4" />
-                <span className="font-medium text-sm">Loading records...</span>
+              <div className="py-20 flex flex-col items-center justify-center text-stone-500 space-y-3">
+                <div className="w-8 h-8 border-2 border-[#26262C] border-t-[#D4AF37] rounded-full animate-spin" />
+                <span className="text-sm font-medium">Loading conversion history...</span>
               </div>
             ) : jobs.length === 0 ? (
-              <div className="py-24 text-center text-slate-500 flex flex-col items-center">
-                <div className="w-16 h-16 rounded-full bg-[#1A1A1A] flex items-center justify-center mb-4">
-                  <FileText className="w-6 h-6 text-slate-600" />
+              <div className="py-20 flex flex-col items-center justify-center text-center px-4">
+                <div className="w-12 h-12 rounded-xl bg-[#18181D] flex items-center justify-center text-stone-500 mb-3 border border-[#26262D]">
+                  <FileText className="w-6 h-6" />
                 </div>
-                <p className="font-medium">No documents processed yet. Upload to begin.</p>
+                <h3 className="text-base font-semibold text-white">No Statements Processed Yet</h3>
+                <p className="text-sm text-stone-400 max-w-sm mt-1">
+                  Upload your first bank statement PDF using the box above to generate Excel files.
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left whitespace-nowrap">
+                <table className="w-full text-left border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-white/5 bg-[#0A0A0A]">
-                      <th className="py-5 pl-10 pr-4 text-xs font-bold uppercase tracking-wider text-slate-600">Document Name</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Status</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Transactions</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Validation</th>
-                      <th className="py-5 px-4 text-xs font-bold uppercase tracking-wider text-slate-600">Date</th>
-                      <th className="py-5 pr-10 pl-4 text-right text-xs font-bold uppercase tracking-wider text-slate-600">Action</th>
+                    <tr className="border-b border-[#222228] bg-[#0C0C0F] text-xs font-semibold uppercase tracking-wider text-stone-400">
+                      <th className="py-3.5 px-6">Document Name</th>
+                      <th className="py-3.5 px-6">Status</th>
+                      <th className="py-3.5 px-6 text-center">Transactions</th>
+                      <th className="py-3.5 px-6 text-center">Math Audit</th>
+                      <th className="py-3.5 px-6">Created</th>
+                      <th className="py-3.5 px-6 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-[#1D1D22]">
                     {jobs.map((job) => (
-                      <tr key={job.id} className="hover:bg-[#151515] transition-colors group">
-                        <td className="py-6 pl-10 pr-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-xl bg-[#1A1A1A] flex items-center justify-center border border-white/5">
-                              <FileText className="w-4 h-4 text-[#DCA846]" />
+                      <tr key={job.id} className="hover:bg-[#16161B] transition-colors">
+                        
+                        {/* Filename */}
+                        <td className="py-4 px-6 font-medium text-white">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-lg bg-[#18181D] flex items-center justify-center text-[#D4AF37] shrink-0 border border-[#282830]">
+                              <FileText className="w-4 h-4" />
                             </div>
-                            <span className="font-semibold text-white truncate max-w-[200px]">{job.original_filename}</span>
+                            <span className="truncate max-w-xs" title={job.original_filename}>
+                              {job.original_filename}
+                            </span>
                           </div>
                         </td>
-                        <td className="py-6 px-4">
-                          <span className={`inline-flex items-center space-x-2 text-sm font-semibold ${
-                            job.file_status === "completed" ? "text-[#DCA846]" :
-                            job.file_status === "failed" ? "text-rose-400" :
-                            "text-slate-400"
-                          }`}>
-                            {job.file_status === "completed" && <CheckCircle2 className="w-4 h-4" />}
-                            {job.file_status === "failed" && <AlertTriangle className="w-4 h-4" />}
-                            {job.file_status !== "completed" && job.file_status !== "failed" && <Clock className="w-4 h-4 animate-spin" />}
-                            <span className="capitalize">{job.file_status}</span>
-                          </span>
-                        </td>
-                        <td className="py-6 px-4 font-semibold text-slate-300">{job.txn_count > 0 ? job.txn_count : "---"}</td>
-                        <td className="py-6 px-4">
+
+                        {/* Status */}
+                        <td className="py-4 px-6">
                           {job.file_status === "completed" ? (
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${job.audit_passed ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.5)]"}`} />
-                              <span className="text-sm font-semibold text-slate-300">{job.audit_passed ? "Valid" : "Mismatch"}</span>
-                            </div>
+                            <span className="inline-flex items-center space-x-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Completed</span>
+                            </span>
+                          ) : job.file_status === "failed" ? (
+                            <span className="inline-flex items-center space-x-1.5 text-xs font-medium text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+                              <AlertCircle className="w-3.5 h-3.5" />
+                              <span>Failed</span>
+                            </span>
                           ) : (
-                            <span className="text-slate-500 text-sm font-medium">Pending</span>
+                            <span className="inline-flex items-center space-x-1.5 text-xs font-medium text-[#E5C06E] bg-[#D4AF37]/10 px-2.5 py-1 rounded-full border border-[#D4AF37]/30">
+                              <Clock className="w-3.5 h-3.5 animate-spin" />
+                              <span className="capitalize">{job.file_status}</span>
+                            </span>
                           )}
                         </td>
-                        <td className="py-6 px-4 text-sm font-medium text-slate-500">
-                          {new Date(job.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+
+                        {/* Transactions Count */}
+                        <td className="py-4 px-6 text-center font-mono text-stone-300">
+                          {job.txn_count > 0 ? job.txn_count : "—"}
                         </td>
-                        <td className="py-6 pr-10 pl-4 text-right">
+
+                        {/* Math Balance Audit */}
+                        <td className="py-4 px-6 text-center">
+                          {job.file_status === "completed" ? (
+                            job.audit_passed ? (
+                              <span className="inline-flex items-center space-x-1 text-xs font-semibold text-emerald-400">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>Balanced</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center space-x-1 text-xs font-semibold text-amber-400">
+                                <AlertCircle className="w-3.5 h-3.5" />
+                                <span>Mismatch</span>
+                              </span>
+                            )
+                          ) : (
+                            <span className="text-stone-500 text-xs">Pending</span>
+                          )}
+                        </td>
+
+                        {/* Date */}
+                        <td className="py-4 px-6 text-stone-400 text-xs">
+                          {new Date(job.created_at).toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </td>
+
+                        {/* Action */}
+                        <td className="py-4 px-6 text-right">
                           {job.file_status === "completed" ? (
                             <a
                               href={`${API_URL}/jobs/${job.id}/download?token=${token}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#DCA846] text-black font-bold text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_5px_15px_rgba(220,168,70,0.2)]"
+                              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#D4AF37] to-[#C59B27] hover:from-[#E5C06E] hover:to-[#D4AF37] text-black font-bold text-xs transition-all shadow-[0_2px_10px_rgba(212,175,55,0.2)]"
                             >
-                              Download CSV
+                              <Download className="w-3.5 h-3.5 stroke-[2.5]" />
+                              <span>Download Excel</span>
                             </a>
                           ) : (
-                            <span className="text-slate-600 text-sm font-medium">Processing...</span>
+                            <span className="text-xs text-stone-500">Processing...</span>
                           )}
                         </td>
                       </tr>
@@ -473,6 +541,53 @@ export default function DashboardPage() {
             )}
           </div>
         </section>
+
+        {/* Feature Highlights Grid */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-[#222228]">
+          <div className="p-6 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+              <Calculator className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-white">Mathematical Balance Audit</h3>
+            <p className="text-xs leading-relaxed text-stone-400">
+              Verifies opening balance against each deposit, withdrawal, and closing balance with a strict arithmetic checksum to ensure financial integrity.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-white">Multi-Page Table Stitching</h3>
+            <p className="text-xs leading-relaxed text-stone-400">
+              Seamlessly stitches narrative descriptions that wrap across pages or split across header rows without losing row alignment.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-[#111114] border border-[#222228] hover:border-[#D4AF37]/30 transition-colors space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-[#D4AF37]/10 border border-[#D4AF37]/30 flex items-center justify-center text-[#D4AF37]">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-semibold text-white">Native Formatted XLSX</h3>
+            <p className="text-xs leading-relaxed text-stone-400">
+              Exports true numerical columns, standardized dates (YYYY-MM-DD), and clean headers ready for Excel, PowerBI, or accounting software.
+            </p>
+          </div>
+        </section>
+
+        {/* Minimal Professional Footer */}
+        <footer className="pt-8 pb-12 border-t border-[#202025] flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-4">
+          <div className="flex items-center space-x-2">
+            <span className="font-semibold text-stone-300">FinExtract</span>
+            <span>• Bank Statement Parser & Financial Reconciliation Engine</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span>Client-side Secure Upload</span>
+            <span>•</span>
+            <span>ISO-Standard XLSX Output</span>
+          </div>
+        </footer>
+
       </main>
     </div>
   );

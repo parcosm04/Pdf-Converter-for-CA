@@ -27,9 +27,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+
+  const autoGuestLogin = async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/guest`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("finextract_token", data.access_token);
+        setToken(data.access_token);
+        await fetchUserProfile(data.access_token);
+      } else {
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error("Auto guest login failed", err);
+      setLoading(false);
+    }
+  };
 
   // Check for stored token on client mount
   useEffect(() => {
@@ -38,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(storedToken);
       fetchUserProfile(storedToken);
     } else {
-      setLoading(false);
+      autoGuestLogin();
     }
   }, []);
 
@@ -53,12 +69,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userData = await res.json();
         setUser(userData);
       } else {
-        // Token is invalid/expired
-        logout();
+        // Token is invalid/expired -> auto authenticate as guest
+        autoGuestLogin();
       }
     } catch (err) {
       console.error("Failed to fetch user profile", err);
-      logout();
+      autoGuestLogin();
     } finally {
       setLoading(false);
     }
@@ -69,15 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(newToken);
     setLoading(true);
     await fetchUserProfile(newToken);
-    router.push("/");
   };
 
   const logout = () => {
     localStorage.removeItem("finextract_token");
     setToken(null);
     setUser(null);
-    setLoading(false);
-    router.push("/login");
+    autoGuestLogin();
   };
 
   return (
